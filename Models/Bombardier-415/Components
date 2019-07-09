@@ -1,0 +1,24 @@
+Profondeur -> Alettoni sul timone
+Alieron -> Flap esterni
+Direction -> Timone
+Volet -> Flpa interni
+Helice -> Elica
+Bol -> Bulbo elica
+Porte -> Apertura carrello anteriore
+Trappe -> Apertura carrello posteriore
+Roure -> Ruote
+Axe -> Asse carrello
+	axeA -> anteriore
+	axe1 -> sospensione ruota bassa
+	axe2 -> sospensione ruota alta
+	axe3 -> sospensione carrello bassa
+	axe4 -> sospensione carrello alta
+
+Parap -> Supporto carrello
+	parap1 -> basso
+	parap2 -> alto
+
+
+
+D -> Destra
+G -> Sinistra
