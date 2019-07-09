@@ -1,5 +1,5 @@
-var camera, scene, renderer, controls;
 var mesh;
+var camera, scene, renderer, controls;
 
 init();
 animate();
@@ -69,10 +69,74 @@ loader.load( 'Models/Bombardier-415/canadair.glb', function ( gltf ) {
     model = gltf.scene;
     model.position.set(5,1,0);
     model.scale.set(5, 5, 5);
-    console.log(model);
+    //console.log(model);
+
+
+    helperGun = new THREE.SkeletonHelper(model);
+    helperGun.material.linewidth = 3;
+    helperGun.visible = true;
+    helperGun.traverse( function ( skeleton ) {
+        //Here we traverse the skeleton and we get the elements that we need
+
+
+    });
+
+    model.traverse(function (children){
+
+        if (children.name == "heliceG") elica_sx = children;
+        if (children.name == "heliceD") elica_dx = children;
+
+        if (children.name == "voletG") flap_int_sx = children;
+        if (children.name == "voletD") flap_int_dx = children;
+
+        if (children.name == "alieronG") flap_ext_sx = children;
+        if (children.name == "alieronD") flap_ext_dx = children;
+
+        if (children.name == "profondeur") flap_timone = children;
+        if (children.name == "direction") timone = children;
+
+        if (children.name == "bolG") bulbo_sx = children;
+        if (children.name == "bolD") bulbo_dx = children;
+
+        if (children.name == "porteG") carrello_ant_sx = children;
+        if (children.name == "porteD") carrello_ant_dx = children;
+
+        if (children.name == "trappeG") carrello_pst_sx = children;
+        if (children.name == "trappeD") carrello_pst_dx = children;
+
+        if (children.name == "roueA") ruote_ant = children;
+        if (children.name == "roueG") ruote_pst_sx = children;
+        if (children.name == "roueD") ruote_pst_dx = children;
+
+        if (children.name == "axeA") asse_ant = children;
+
+        if (children.name == "axeG1") sospensione_1_sx = children;
+        if (children.name == "axeG2") sospensione_2_sx = children;
+        if (children.name == "axeG3") sospensione_3_sx = children;
+        if (children.name == "axeG4") sospensione_4_sx = children;
+        if (children.name == "axeD1") sospensione_1_dx = children;
+        if (children.name == "axeD2") sospensione_2_dx = children;
+        if (children.name == "axeD3") sospensione_3_dx = children;
+        if (children.name == "axeD4") sospensione_4_dx = children;
+
+        if (children.name == "parapG1") supp_carrello_basso_sx = children;
+        if (children.name == "parapG2") supp_carrello_alto_sx = children;
+        if (children.name == "parapD1") supp_carrello_basso_dx = children;
+        if (children.name == "parapD2") supp_carrello_alto_dx = children;
+
+    });
+
+    //console.log("CICCIOFORMAGGIO");
+    //console.log(elica_sx);
+    //console.log(elica_sx);
+    /elica_sx.rotation.x = Math.PI/3;
+    //elica_sx.position.set(10, 10, 10);
+    //console.log(model.children[140]);
+    //console.log(model.children[140].id);
     scene.add( model );
+
 }, undefined, function ( error ) {
 
-    console.error( error );
+    //console.error( error );
 
 } );
