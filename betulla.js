@@ -129,7 +129,7 @@ loader.load( 'Models/Bombardier-415/canadair.glb', function ( gltf ) {
     //console.log("CICCIOFORMAGGIO");
     //console.log(elica_sx);
     //console.log(elica_sx);
-    /elica_sx.rotation.x = Math.PI/3;
+    //elica_sx.rotation.x = Math.PI/3;
     //elica_sx.position.set(10, 10, 10);
     //console.log(model.children[140]);
     //console.log(model.children[140].id);
