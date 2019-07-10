@@ -278,7 +278,7 @@ function onDocumentKeyDown(event) {
             carrello_ant_sx.rotation.y = 0.110415;
             carrello_ant_sx.position.x = -7.59577;
             carrello_ant_sx.position.y = -3.69995;
-            carrello_ant_sx.position.z = 0.0035;
+            carrello_ant_sx.position.z = 0.00350;
 
 
             /*
