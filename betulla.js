@@ -87,7 +87,8 @@ function animate() {
 
 var loader = new THREE.GLTFLoader();
 
-loader.load( 'Models/Bombardier-415/canadair.glb', function ( gltf ) {
+loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
+
 
     model = gltf.scene;
     model.position.set(5,1,0);
@@ -138,30 +139,66 @@ loader.load( 'Models/Bombardier-415/canadair.glb', function ( gltf ) {
         if (children.name == "parapD2") supp_carrello_alto_dx = children;
 
     });
-
-    //console.log("CICCIOFORMAGGIO");
-    //console.log(elica_sx);
-    //console.log(elica_sx);
-    //elica_sx.rotation.x = Math.PI/3;
-    //elica_sx.position.set(10, 10, 10);
-    //console.log(model.children[140]);
-    //console.log(model.children[140].id);
     scene.add( model );
 
 }, undefined, function ( error ) {
-
-    //console.error( error );
-
+    console.error( error );
 } );
 
 var engine;
 var reset;
 var motors = 0;
 var speed_helic = 0;
+var t = 0;
+var carrello = true;
 
 function go_motors() {
     elica_sx.rotation.x += speed_helic;
     elica_dx.rotation.x += speed_helic;
+    bulbo_sx.rotation.x += speed_helic;
+    bulbo_dx.rotation.x += speed_helic;
+}
+
+function close_doors() {
+    var final_pos_carrello_ant_sx = [-7.581658840179443, -3.7419378757476807, 0.19173964858055115];
+    var final_pos_carrello_ant_dx = [-7.5800251960754395, -3.73860764503479, -0.18563362956047058];
+    var final_ori_carrello_ant_sx = [0.009189425971824428, -0.00554940649972749, 0.0018415058893600554];
+    var final_ori_carrello_ant_dx = [3.1403668839430146-2*Math.PI, -0.0003022653574889117, 0.2552230979322464];
+    var init_pos_carrello_ant_sx = [carrello_ant_sx.position.x, carrello_ant_sx.position.y, carrello_ant_sx.position.z];
+    var init_pos_carrello_ant_dx = [carrello_ant_dx.position.x, carrello_ant_dx.position.y, carrello_ant_dx.position.z];
+    var init_ori_carrello_ant_sx = [carrello_ant_sx.rotation.x, carrello_ant_sx.rotation.y, carrello_ant_sx.rotation.z];
+    var init_ori_carrello_ant_dx = [carrello_ant_dx.rotation.x, carrello_ant_dx.rotation.y, carrello_ant_dx.rotation.z];
+
+    if (asse_ant.rotation.z < Math.PI/2) {
+        asse_ant.position.y += 0.005;
+        asse_ant.rotation.z += Math.PI / 200;
+        ruote_ant.position.y += 0.005;
+        ruote_ant.position.x += 0.01 * Math.cos(asse_ant.rotation.z);
+        ruote_ant.position.y += 0.01 * Math.sin(asse_ant.rotation.z);
+    }
+    else {
+        carrello_ant_sx.position.x = init_pos_carrello_ant_sx[0] + t * (final_pos_carrello_ant_sx[0] - init_pos_carrello_ant_sx[0]);
+        carrello_ant_sx.position.y = init_pos_carrello_ant_sx[1] + t * (final_pos_carrello_ant_sx[1] - init_pos_carrello_ant_sx[1]);
+        carrello_ant_sx.position.z = init_pos_carrello_ant_sx[2] + t * (final_pos_carrello_ant_sx[2] - init_pos_carrello_ant_sx[2]);
+        carrello_ant_sx.rotation.x = init_ori_carrello_ant_sx[0] + t * (final_ori_carrello_ant_sx[0] - init_ori_carrello_ant_sx[0]);
+        carrello_ant_sx.rotation.y = init_ori_carrello_ant_sx[1] + t * (final_ori_carrello_ant_sx[1] - init_ori_carrello_ant_sx[1]);
+        carrello_ant_sx.rotation.z = init_ori_carrello_ant_sx[2] + t * (final_ori_carrello_ant_sx[2] - init_ori_carrello_ant_sx[2]);
+
+        carrello_ant_dx.position.x = init_pos_carrello_ant_dx[0] + t * (final_pos_carrello_ant_dx[0] - init_pos_carrello_ant_dx[0]);
+        carrello_ant_dx.position.y = init_pos_carrello_ant_dx[1] + t * (final_pos_carrello_ant_dx[1] - init_pos_carrello_ant_dx[1]);
+        carrello_ant_dx.position.z = init_pos_carrello_ant_dx[2] + t * (final_pos_carrello_ant_dx[2] - init_pos_carrello_ant_dx[2]);
+        carrello_ant_dx.rotation.x = init_ori_carrello_ant_dx[0] + t * (final_ori_carrello_ant_dx[0] - init_ori_carrello_ant_dx[0]);
+        carrello_ant_dx.rotation.y = init_ori_carrello_ant_dx[1] + t * (final_ori_carrello_ant_dx[1] - init_ori_carrello_ant_dx[1]);
+        carrello_ant_dx.rotation.z = init_ori_carrello_ant_dx[2] + t * (final_ori_carrello_ant_dx[2] - init_ori_carrello_ant_dx[2]);
+        t += 0.01;
+
+        // x -90 +180
+        // y 6 0
+        // z
+
+
+    }
+
 }
 
 function reset_attitude() {
@@ -265,40 +302,20 @@ function onDocumentKeyDown(event) {
     }
 
     else if (keyCode == 67) { // c
-        if (asse_ant.rotation.z > Math.PI/2) {
-            asse_ant.position.y += 0.005;
-            asse_ant.rotation.z += Math.PI / 200;
-            ruote_ant.position.y += 0.005;
-            ruote_ant.position.x += 0.01 * Math.cos(asse_ant.rotation.z);
-            ruote_ant.position.y += 0.01 * Math.sin(asse_ant.rotation.z);
-        }
-        else {
-            carrello_ant_sx.rotation.x = -0.313373;
-            carrello_ant_sx.rotation.z = -0.060885;
-            carrello_ant_sx.rotation.y = 0.110415;
-            carrello_ant_sx.position.x = -7.59577;
-            carrello_ant_sx.position.y = -3.69995;
-            carrello_ant_sx.position.z = 0.00350;
-
-
-            /*
-            x = -7.59577
-            y = -0.181294
-            z = -3.69995
-            -0.313373d
-            -0.060885d
-            0.110415d
-
-
-            -7.57884
-            0.197958
-            -3.73626
-            -180.595d
-            14.9628d
-            -1.08939d
-
-             */
-
+        if (carrello) {
+            t = 0;
+            carrello = false;
+            var doors = setInterval(close_doors, 10);
         }
     }
+
+    /*
+    else if (keyCode == 85) carrello_ant_dx.rotation.x += 0.01;
+    else if (keyCode == 73) carrello_ant_dx.rotation.y += 0.01;
+    else if (keyCode == 79) carrello_ant_dx.rotation.z += 0.01;
+    else if (keyCode == 74) carrello_ant_dx.rotation.x -= 0.01;
+    else if (keyCode == 75) carrello_ant_dx.rotation.y -= 0.01;
+    else if (keyCode == 76) carrello_ant_dx.rotation.z -= 0.01;
+
+    else if (keyCode == 82) console.log(carrello_ant_dx.rotation);*/
 };
