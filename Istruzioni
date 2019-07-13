@@ -1,0 +1,12 @@
+w -> accelerare (se a contato con il terreno, aumenta anche la velocità delle ruote) {fino a 5 velocità)
+s -> decelerare (vedi 'w')
+
+a -> virare a sx (abbassa il flap interno sx, alza il flap interno dx, vira con il timone)
+d -> virare a dx (vedi 'a')
+
+up -> cabrare (abbassa i flap esterni e alza i flap sul timone)
+down -> picchiare (vedi 'up')
+
+c -> carrello (richiama il carrello)
+r -> reset (riporta il sistema in una configurazione di equilibrio)
+
