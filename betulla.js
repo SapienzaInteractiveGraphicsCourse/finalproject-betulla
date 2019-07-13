@@ -147,11 +147,19 @@ loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) 
 
 var engine;
 var reset;
+var total_reset;
 var motors = 0;
+var weels = 0;
 var speed_helic = 0;
+var speed_weels = 0;
 var t = 0;
 var s = 0;
 var carrello = true;
+var ground = false;
+var vel = 0;
+var vel_x = 0;
+var vel_y = 0;
+var vel_z = 0;
 
 function go_motors() {
     elica_sx.rotation.x += speed_helic;
@@ -309,6 +317,29 @@ function reset_attitude() {
     else flap_ext_dx.rotation.z += Math.PI/250;
 }
 
+function reset_all() {
+
+}
+
+function motion() {
+    if (ground) {
+        ruote_ant.rotation.z += speed_weels;
+        ruote_pst_sx.rotation.z += speed_weels;
+        ruote_pst_dx.rotation.z += speed_weels;
+    }
+    else {
+        model.rotation.z = -flap_timone.rotation.z;
+        if (flap_int_dx.rotation.z > 0) {
+            model.rotation.x = -flap_int_sx.rotation.z*0.8;
+        }
+        else model.rotation.x = flap_int_dx.rotation.z*0.8;
+    }
+}
+
+function manage_velocity() {
+    if (motors == 0) vel = 0;
+}
+
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
@@ -326,12 +357,18 @@ function onDocumentKeyDown(event) {
             speed_helic = 0;
             clearInterval(engine);
         }
+        setInterval(motion, 1);
     }
     else if (keyCode == 87) { // w
         if (motors != 0 && motors != 5) {
             motors += 1;
             speed_helic += 0.05;
         }
+        if (weels != 5) {
+            weels += 1;
+            speed_weels += 0.1;
+        }
+        setInterval(motion, 1);
 
     }
     else if (keyCode == 83) { // s
@@ -342,17 +379,14 @@ function onDocumentKeyDown(event) {
     }
     else if (keyCode == 65) { // a
         clearInterval(reset);
+        clearInterval(total_reset);
         if (flap_int_dx.rotation.z < 0) {
             flap_int_dx.rotation.z += Math.PI/200;
             flap_int_sx.rotation.z -= Math.PI/600;
-            flap_ext_dx.rotation.z += Math.PI/250;
-            flap_ext_sx.rotation.z -= Math.PI/700;
         }
         else if (flap_int_sx.rotation.z > - Math.PI/4) {
             flap_int_sx.rotation.z -= Math.PI/200;
             flap_int_dx.rotation.z += Math.PI/600;
-            flap_ext_sx.rotation.z -= Math.PI/250;
-            flap_ext_dx.rotation.z += Math.PI/700;
         }
         if (timone.rotation.y > - Math.PI/12) {
             timone.rotation.y -= Math.PI/600;
@@ -360,38 +394,45 @@ function onDocumentKeyDown(event) {
     }
     else if (keyCode == 68) { // d
         clearInterval(reset);
+        clearInterval(total_reset);
         if (flap_int_sx.rotation.z < 0) {
             flap_int_sx.rotation.z += Math.PI/200;
             flap_int_dx.rotation.z -= Math.PI/600;
-            flap_ext_sx.rotation.z += Math.PI/250;
-            flap_ext_dx.rotation.z -= Math.PI/700;
         }
         else if (flap_int_dx.rotation.z > - Math.PI/4) {
             flap_int_dx.rotation.z -= Math.PI/200;
             flap_int_sx.rotation.z += Math.PI/600;
-            flap_ext_dx.rotation.z -= Math.PI/250;
-            flap_ext_sx.rotation.z += Math.PI/700;
         }
         if (timone.rotation.y < Math.PI/12) {
             timone.rotation.y += Math.PI/600;
         }
     }
-    else if (keyCode == 38) { // up
+    else if (keyCode == 101) { // up-38
         clearInterval(reset);
-        if (flap_timone.rotation.z > - Math.PI/12) {
-            flap_timone.rotation.z -= Math.PI/600;
+        clearInterval(total_reset);
+        if (flap_timone.rotation.z > - Math.PI/8) {
+            flap_timone.rotation.z -= Math.PI/300;
+            flap_ext_sx.rotation.z += Math.PI/400;
+            flap_ext_dx.rotation.z += Math.PI/400;
         }
     }
 
-    else if (keyCode == 40) { // down
+    else if (keyCode == 98) { // down-40
         clearInterval(reset);
+        clearInterval(total_reset);
         if (flap_timone.rotation.z <  Math.PI/8) {
             flap_timone.rotation.z += Math.PI / 300;
+            flap_ext_sx.rotation.z -= Math.PI / 400;
+            flap_ext_dx.rotation.z -= Math.PI / 400;
         }
     }
 
     else if (keyCode == 82) { // r
         reset = setInterval(reset_attitude, 20);
+    }
+
+    else if (keyCode == 82) { // r
+        total_reset = setInterval(reset_all, 20);
     }
 
     else if (keyCode == 67) { // c
