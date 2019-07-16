@@ -15,7 +15,7 @@ function init() {
     mesh = new THREE.Mesh( geometry, material );
     //scene.add( mesh );
 
-    scene.background = new THREE.Color( 0xffffff );
+    //scene.background = new THREE.Color( 0xffffff );
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
@@ -30,10 +30,10 @@ function init() {
     camera.position.set( 0, 20, 100 );
     controls.update();
 
-    /*light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
     light.position.set( 0, 200, 0 );
     scene.add( light );
-    light = new THREE.DirectionalLight( 0xffffff );
+    /*light = new THREE.DirectionalLight( 0xffffff );
     light.position.set( 0, 200, 100 );
     light.castShadow = true;
     light.shadow.camera.top = 180;
@@ -45,13 +45,6 @@ function init() {
     /*var light = new THREE.PointLight( 0xffffff, 20, 100 );
     light.position.set( 50, 50, 50 );
     scene.add( light );*/
-
-    /*new THREE.MTLLoader().setPath( 'Models/Bombardier-415/' ).load( 'cl415.mtl', function ( materials ) {
-            materials.preload();
-            new THREE.OBJLoader().setMaterials( materials ).setPath( 'Models/Bombardier-415/' ).load( 'cl415.obj', function ( object ) {
-                    scene.add( object );
-                } );
-        } );*/
 
     // LIGHTS
     dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
@@ -70,6 +63,9 @@ function init() {
     var sky = new THREE.Mesh(skyGeo, material);
     sky.material.side = THREE.BackSide;
     scene.add(sky);
+
+    var axesHelper = new THREE.AxesHelper( 50 );
+    scene.add( axesHelper );
 
 }
 
@@ -91,9 +87,8 @@ loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) 
 
 
     model = gltf.scene;
-    model.position.set(5,1,0);
+    model.position.set(0,1,0);
     model.scale.set(5, 5, 5);
-    //console.log(model);
 
     model.traverse(function (children){
 
@@ -147,7 +142,8 @@ loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) 
 
 var engine;
 var reset;
-var total_reset;
+var reset_int;
+var reset_ext;
 var motors = 0;
 var weels = 0;
 var speed_helic = 0;
@@ -157,9 +153,9 @@ var s = 0;
 var carrello = true;
 var ground = false;
 var vel = 0;
-var vel_x = 0;
-var vel_y = 0;
-var vel_z = 0;
+var flag = true;
+var flag_motors = false;
+
 
 function go_motors() {
     elica_sx.rotation.x += speed_helic;
@@ -296,13 +292,12 @@ function close_doors_back() {
     sospensione_4_dx.position.z = sospensione_4_dx.position.z + s * (final_pos_asse_4_dx[2] - sospensione_4_dx.position.z);
     sospensione_4_dx.rotation.x = sospensione_4_dx.rotation.x + s * (final_ori_asse_4_dx - sospensione_4_dx.rotation.x);
 
-
-
     s += 0.001;
 
 }
 
 function reset_attitude() {
+
     if (timone.rotation.y < 0) timone.rotation.y += Math.PI/600;
     else timone.rotation.y -= Math.PI/600;
     if (flap_timone.rotation.z > 0) flap_timone.rotation.z -= Math.PI/600;
@@ -315,29 +310,87 @@ function reset_attitude() {
     else flap_ext_sx.rotation.z += Math.PI/250;
     if (flap_ext_dx.rotation.z > 0) flap_ext_dx.rotation.z -= Math.PI/700;
     else flap_ext_dx.rotation.z += Math.PI/250;
+
+    if (model.rotation.x > 0) model.rotateX(-Math.PI/100*model.rotation.x);
+    else model.rotateX(-Math.PI/100*model.rotation.x);
+
+    if (model.rotation.z > 0) model.rotateZ(-Math.PI/100*model.rotation.z);
+    else model.rotateZ(-Math.PI/100*model.rotation.z);
+
 }
 
-function reset_all() {
+function set_flap_int() {
+    if (timone.rotation.y < 0) timone.rotation.y += Math.PI/600;
+    else timone.rotation.y -= Math.PI/600;
+    if (flap_int_dx.rotation.z > 0) flap_int_dx.rotation.z -= Math.PI/600;
+    else flap_int_dx.rotation.z += Math.PI/200;
+    if (flap_int_sx.rotation.z > 0) flap_int_sx.rotation.z -= Math.PI/600;
+    else flap_int_sx.rotation.z += Math.PI/200;
+}
 
+function set_flap_ext() {if (flap_timone.rotation.z > 0) flap_timone.rotation.z -= Math.PI/600;
+    else flap_timone.rotation.z += Math.PI/600;
+    if (flap_ext_sx.rotation.z > 0) flap_ext_sx.rotation.z -= Math.PI/700;
+    else flap_ext_sx.rotation.z += Math.PI/250;
+    if (flap_ext_dx.rotation.z > 0) flap_ext_dx.rotation.z -= Math.PI/700;
+    else flap_ext_dx.rotation.z += Math.PI/250;
 }
 
 function motion() {
+
+    const yAxis = new THREE.Vector3(0,1,0);
+
     if (ground) {
         ruote_ant.rotation.z += speed_weels;
         ruote_pst_sx.rotation.z += speed_weels;
         ruote_pst_dx.rotation.z += speed_weels;
     }
     else {
-        model.rotation.z = -flap_timone.rotation.z;
-        if (flap_int_dx.rotation.z > 0) {
-            model.rotation.x = -flap_int_sx.rotation.z*0.8;
+
+        if (flap_timone.rotation.z > 0) { // up
+            model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
         }
-        else model.rotation.x = flap_int_dx.rotation.z*0.8;
+        else {
+            model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
+        }
+
+        if (flap_int_dx.rotation.z < 0) { // destra
+            model.rotateX(Math.PI/400*flap_int_dx.rotation.z);
+            //model.rotateOnWorldAxis(yAxis, Math.PI/500*flap_int_dx.rotation.z);
+        }
+        else { // sinistra
+            model.rotateX(-Math.PI/400*flap_int_sx.rotation.z);
+            //model.rotateOnWorldAxis(yAxis, -Math.PI/500*flap_int_sx.rotation.z);
+        }
+
+
+        var vel_x = -vel*Math.cos(model.rotation.y);
+        var vel_y = -vel*Math.sin(model.rotation.z);
+        var vel_z = vel*Math.sin(model.rotation.y);
+
+        //model.position.x = vel_x;
+        //model.position.y = vel_y;
+        //model.position.z = vel_z;
     }
 }
 
 function manage_velocity() {
-    if (motors == 0) vel = 0;
+    if (motors == 0) vel -= 1;
+    else if (vel < 150 + model.rotation.z*30) vel += 1;
+    else if (vel < 206 + model.rotation.z*30 && motors > 1) vel += 0.67;
+    else if (vel < 263 + model.rotation.z*30 && motors > 2) vel += 0.5;
+    else if (vel < 320 + model.rotation.z*30 && motors > 3) vel += 0.5;
+    else if (vel < 376 + model.rotation.z*30 && motors > 4) vel += 0.33;
+
+    else if (vel > 320 + model.rotation.z*30 && motors < 5) vel -= 0.5;
+    else if (vel > 263 + model.rotation.z*30 && motors < 4) vel -= 0.5;
+    else if (vel > 206 + model.rotation.z*30 && motors < 3) vel -= 0.5;
+    else if (vel > 150 + model.rotation.z*30 && motors < 2) vel -= 0.5;
+
+}
+
+function stallo() {
+
 }
 
 document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -357,7 +410,11 @@ function onDocumentKeyDown(event) {
             speed_helic = 0;
             clearInterval(engine);
         }
-        setInterval(motion, 1);
+        if (!flag_motors) {
+            flag_motors = true;
+            setInterval(motion, 1);
+            setInterval(manage_velocity, 40);
+        }
     }
     else if (keyCode == 87) { // w
         if (motors != 0 && motors != 5) {
@@ -368,7 +425,6 @@ function onDocumentKeyDown(event) {
             weels += 1;
             speed_weels += 0.1;
         }
-        setInterval(motion, 1);
 
     }
     else if (keyCode == 83) { // s
@@ -379,7 +435,9 @@ function onDocumentKeyDown(event) {
     }
     else if (keyCode == 65) { // a
         clearInterval(reset);
-        clearInterval(total_reset);
+        clearInterval(reset_int);
+        clearInterval(reset_ext);
+        flag = false;
         if (flap_int_dx.rotation.z < 0) {
             flap_int_dx.rotation.z += Math.PI/200;
             flap_int_sx.rotation.z -= Math.PI/600;
@@ -394,7 +452,9 @@ function onDocumentKeyDown(event) {
     }
     else if (keyCode == 68) { // d
         clearInterval(reset);
-        clearInterval(total_reset);
+        clearInterval(reset_int);
+        clearInterval(reset_ext);
+        flag = false;
         if (flap_int_sx.rotation.z < 0) {
             flap_int_sx.rotation.z += Math.PI/200;
             flap_int_dx.rotation.z -= Math.PI/600;
@@ -407,9 +467,11 @@ function onDocumentKeyDown(event) {
             timone.rotation.y += Math.PI/600;
         }
     }
-    else if (keyCode == 101) { // up-38
+    else if (keyCode == 66) { // up-38
         clearInterval(reset);
-        clearInterval(total_reset);
+        clearInterval(reset_int);
+        clearInterval(reset_ext);
+        flag = false;
         if (flap_timone.rotation.z > - Math.PI/8) {
             flap_timone.rotation.z -= Math.PI/300;
             flap_ext_sx.rotation.z += Math.PI/400;
@@ -417,9 +479,11 @@ function onDocumentKeyDown(event) {
         }
     }
 
-    else if (keyCode == 98) { // down-40
+    else if (keyCode == 78) { // down-40
         clearInterval(reset);
-        clearInterval(total_reset);
+        clearInterval(reset_int);
+        clearInterval(reset_ext);
+        flag = false;
         if (flap_timone.rotation.z <  Math.PI/8) {
             flap_timone.rotation.z += Math.PI / 300;
             flap_ext_sx.rotation.z -= Math.PI / 400;
@@ -428,11 +492,18 @@ function onDocumentKeyDown(event) {
     }
 
     else if (keyCode == 82) { // r
-        reset = setInterval(reset_attitude, 20);
+        if (!flag) {
+            flag = true;
+            reset = setInterval(reset_attitude, 10);
+        }
     }
 
-    else if (keyCode == 82) { // r
-        total_reset = setInterval(reset_all, 20);
+    else if (keyCode == 79) { // o
+        reset_int = setInterval(set_flap_int, 10);
+    }
+
+    else if (keyCode == 80) { // p
+        reset_ext = setInterval(set_flap_ext, 10);
     }
 
     else if (keyCode == 67) { // c
@@ -444,14 +515,4 @@ function onDocumentKeyDown(event) {
             setInterval(close_doors_back, 10);
         }
     }
-
-    /*
-    else if (keyCode == 85) carrello_ant_dx.rotation.x += 0.01;
-    else if (keyCode == 73) carrello_ant_dx.rotation.y += 0.01;
-    else if (keyCode == 79) carrello_ant_dx.rotation.z += 0.01;
-    else if (keyCode == 74) carrello_ant_dx.rotation.x -= 0.01;
-    else if (keyCode == 75) carrello_ant_dx.rotation.y -= 0.01;
-    else if (keyCode == 76) carrello_ant_dx.rotation.z -= 0.01;
-
-    else if (keyCode == 82) console.log(carrello_ant_dx.rotation);*/
 };
