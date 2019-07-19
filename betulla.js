@@ -1,5 +1,7 @@
 var mesh;
 var camera, scene, renderer, controls;
+var time = 0;
+var newPosition = new THREE.Vector3();
 
 init();
 animate();
@@ -9,6 +11,7 @@ function init() {
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 20000 );
     camera.position.z = 400;
     scene = new THREE.Scene();
+
 
     var geometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
     var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
@@ -77,8 +80,17 @@ function onWindowResize() {
 
 function animate() {
     requestAnimationFrame( animate );
+
+    time += 0.01;
+
+    newPosition.x = Math.cos( time );
+    newPosition.z = Math.sin( time );
+
+    mesh.lookAt( newPosition );
+
+    mesh.position.copy( newPosition );
+
     renderer.render( scene, camera );
-    controls.update();
 }
 
 var loader = new THREE.GLTFLoader();
@@ -328,7 +340,8 @@ function set_flap_int() {
     else flap_int_sx.rotation.z += Math.PI/200;
 }
 
-function set_flap_ext() {if (flap_timone.rotation.z > 0) flap_timone.rotation.z -= Math.PI/600;
+function set_flap_ext() {
+    if (flap_timone.rotation.z > 0) flap_timone.rotation.z -= Math.PI/600;
     else flap_timone.rotation.z += Math.PI/600;
     if (flap_ext_sx.rotation.z > 0) flap_ext_sx.rotation.z -= Math.PI/700;
     else flap_ext_sx.rotation.z += Math.PI/250;
@@ -337,8 +350,6 @@ function set_flap_ext() {if (flap_timone.rotation.z > 0) flap_timone.rotation.z 
 }
 
 function motion() {
-
-    const yAxis = new THREE.Vector3(0,1,0);
 
     if (ground) {
         ruote_ant.rotation.z += speed_weels;
@@ -356,27 +367,23 @@ function motion() {
 
         if (flap_int_dx.rotation.z < 0) { // destra
             model.rotateX(Math.PI/400*flap_int_dx.rotation.z);
-            //model.rotateOnWorldAxis(yAxis, Math.PI/500*flap_int_dx.rotation.z);
         }
         else { // sinistra
             model.rotateX(-Math.PI/400*flap_int_sx.rotation.z);
-            //model.rotateOnWorldAxis(yAxis, -Math.PI/500*flap_int_sx.rotation.z);
         }
 
-
-        var vel_x = -vel*Math.cos(model.rotation.y);
-        var vel_y = -vel*Math.sin(model.rotation.z);
-        var vel_z = vel*Math.sin(model.rotation.y);
-
-        //model.position.x = vel_x;
-        //model.position.y = vel_y;
-        //model.position.z = vel_z;
+        model.translateX(-vel*0.01);
     }
 }
 
 function manage_velocity() {
-    if (motors == 0) vel -= 1;
-    else if (vel < 150 + model.rotation.z*30) vel += 1;
+    if (motors == 0) {
+        if (vel > 0) vel -= 1;
+    }
+    else if (vel < 150 + model.rotation.z*30) {
+        vel += 1;
+        if (!ground) stall();
+    }
     else if (vel < 206 + model.rotation.z*30 && motors > 1) vel += 0.67;
     else if (vel < 263 + model.rotation.z*30 && motors > 2) vel += 0.5;
     else if (vel < 320 + model.rotation.z*30 && motors > 3) vel += 0.5;
@@ -389,8 +396,11 @@ function manage_velocity() {
 
 }
 
-function stallo() {
-
+function stall() {
+    vel += 1;
+    model.position.y += -1;
+    if (model.rotation.z > Math.PI/2) model.rotation.z -= Math.PI/500;
+    else model.rotation.z += Math.PI/500;
 }
 
 document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -416,7 +426,7 @@ function onDocumentKeyDown(event) {
             setInterval(manage_velocity, 40);
         }
     }
-    else if (keyCode == 87) { // w
+    else if (keyCode == 66) { // w
         if (motors != 0 && motors != 5) {
             motors += 1;
             speed_helic += 0.05;
@@ -427,7 +437,7 @@ function onDocumentKeyDown(event) {
         }
 
     }
-    else if (keyCode == 83) { // s
+    else if (keyCode == 78) { // s
         if (motors != 0 && motors != 1) {
             motors -= 1;
             speed_helic -= 0.05;
@@ -467,7 +477,7 @@ function onDocumentKeyDown(event) {
             timone.rotation.y += Math.PI/600;
         }
     }
-    else if (keyCode == 66) { // up-38
+    else if (keyCode == 87) { // up-38
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -479,7 +489,7 @@ function onDocumentKeyDown(event) {
         }
     }
 
-    else if (keyCode == 78) { // down-40
+    else if (keyCode == 83) { // down-40
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
