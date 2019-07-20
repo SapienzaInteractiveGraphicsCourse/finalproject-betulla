@@ -1,7 +1,5 @@
-var mesh;
 var camera, scene, renderer, controls;
 var time = 0;
-var newPosition = new THREE.Vector3();
 
 init();
 animate();
@@ -9,14 +7,7 @@ animate();
 function init() {
 
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 20000 );
-    camera.position.z = 400;
     scene = new THREE.Scene();
-
-
-    var geometry = new THREE.BoxBufferGeometry( 10, 10, 10 );
-    var material = new THREE.MeshBasicMaterial( { color: 0xff0000 } );
-    mesh = new THREE.Mesh( geometry, material );
-    //scene.add( mesh );
 
     //scene.background = new THREE.Color( 0xffffff );
 
@@ -27,10 +18,11 @@ function init() {
     //
     window.addEventListener( 'resize', onWindowResize, false );
 
-    controls = new THREE.OrbitControls( camera, document );
+    controls = new THREE.OrbitControls( camera );
 
     //controls.update() must be called after any manual changes to the camera's transform
-    camera.position.set( 0, 20, 100 );
+    camera.position.set( 80, 40, 0 );
+    camera.lookAt( scene.position );
     controls.update();
 
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
@@ -70,6 +62,74 @@ function init() {
     var axesHelper = new THREE.AxesHelper( 50 );
     scene.add( axesHelper );
 
+    //Load canadair
+	var loader = new THREE.GLTFLoader();
+
+	loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
+
+	    model = gltf.scene;
+	    model.position.set(0,0,0);
+	    model.scale.set(5, 5, 5);
+
+	    model.traverse(function (children){
+
+	        if (children.name == "heliceG") elica_sx = children;
+	        if (children.name == "heliceD") elica_dx = children;
+
+	        if (children.name == "voletG") flap_int_sx = children;
+	        if (children.name == "voletD") flap_int_dx = children;
+
+	        if (children.name == "aileronG") flap_ext_sx = children;
+	        if (children.name == "aileronD") flap_ext_dx = children;
+
+	        if (children.name == "profondeur") flap_timone = children;
+	        if (children.name == "direction") timone = children;
+
+	        if (children.name == "bolG") bulbo_sx = children;
+	        if (children.name == "bolD") bulbo_dx = children;
+
+	        if (children.name == "porteG") carrello_ant_sx = children;
+	        if (children.name == "porteD") carrello_ant_dx = children;
+
+	        if (children.name == "trappeG") carrello_pst_sx = children;
+	        if (children.name == "trappeD") carrello_pst_dx = children;
+
+	        if (children.name == "roueA") ruote_ant = children;
+	        if (children.name == "roueG") ruote_pst_sx = children;
+	        if (children.name == "roueD") ruote_pst_dx = children;
+
+	        if (children.name == "axeA") asse_ant = children;
+
+	        if (children.name == "axeG1") sospensione_1_sx = children;
+	        if (children.name == "axeG2") sospensione_2_sx = children;
+	        if (children.name == "axeG3") sospensione_3_sx = children;
+	        if (children.name == "axeG4") sospensione_4_sx = children;
+	        if (children.name == "axeD1") sospensione_1_dx = children;
+	        if (children.name == "axeD2") sospensione_2_dx = children;
+	        if (children.name == "axeD3") sospensione_3_dx = children;
+	        if (children.name == "axeD4") sospensione_4_dx = children;
+
+	        if (children.name == "parapG1") supp_carrello_basso_sx = children;
+	        if (children.name == "parapG2") supp_carrello_alto_sx = children;
+	        if (children.name == "parapD1") supp_carrello_basso_dx = children;
+	        if (children.name == "parapD2") supp_carrello_alto_dx = children;
+
+	    });
+	    scene.add( model );
+
+	},
+	// called while loading is progressing
+	function ( xhr ) {
+
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+	},
+	// called when loading has errors
+	function ( error ) {
+
+		console.log( 'An error happened' );
+
+	});
 }
 
 function onWindowResize() {
@@ -79,78 +139,11 @@ function onWindowResize() {
 }
 
 function animate() {
-    requestAnimationFrame( animate );
+    renderer.render(scene, camera);
 
     time += 0.01;
-
-    newPosition.x = Math.cos( time );
-    newPosition.z = Math.sin( time );
-
-    mesh.lookAt( newPosition );
-
-    mesh.position.copy( newPosition );
-
-    renderer.render( scene, camera );
+    requestAnimationFrame( animate );
 }
-
-var loader = new THREE.GLTFLoader();
-
-loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
-
-
-    model = gltf.scene;
-    model.position.set(0,1,0);
-    model.scale.set(5, 5, 5);
-
-    model.traverse(function (children){
-
-        if (children.name == "heliceG") elica_sx = children;
-        if (children.name == "heliceD") elica_dx = children;
-
-        if (children.name == "voletG") flap_int_sx = children;
-        if (children.name == "voletD") flap_int_dx = children;
-
-        if (children.name == "aileronG") flap_ext_sx = children;
-        if (children.name == "aileronD") flap_ext_dx = children;
-
-        if (children.name == "profondeur") flap_timone = children;
-        if (children.name == "direction") timone = children;
-
-        if (children.name == "bolG") bulbo_sx = children;
-        if (children.name == "bolD") bulbo_dx = children;
-
-        if (children.name == "porteG") carrello_ant_sx = children;
-        if (children.name == "porteD") carrello_ant_dx = children;
-
-        if (children.name == "trappeG") carrello_pst_sx = children;
-        if (children.name == "trappeD") carrello_pst_dx = children;
-
-        if (children.name == "roueA") ruote_ant = children;
-        if (children.name == "roueG") ruote_pst_sx = children;
-        if (children.name == "roueD") ruote_pst_dx = children;
-
-        if (children.name == "axeA") asse_ant = children;
-
-        if (children.name == "axeG1") sospensione_1_sx = children;
-        if (children.name == "axeG2") sospensione_2_sx = children;
-        if (children.name == "axeG3") sospensione_3_sx = children;
-        if (children.name == "axeG4") sospensione_4_sx = children;
-        if (children.name == "axeD1") sospensione_1_dx = children;
-        if (children.name == "axeD2") sospensione_2_dx = children;
-        if (children.name == "axeD3") sospensione_3_dx = children;
-        if (children.name == "axeD4") sospensione_4_dx = children;
-
-        if (children.name == "parapG1") supp_carrello_basso_sx = children;
-        if (children.name == "parapG2") supp_carrello_alto_sx = children;
-        if (children.name == "parapD1") supp_carrello_basso_dx = children;
-        if (children.name == "parapD2") supp_carrello_alto_dx = children;
-
-    });
-    scene.add( model );
-
-}, undefined, function ( error ) {
-    console.error( error );
-} );
 
 var engine;
 var reset;
@@ -374,6 +367,8 @@ function motion() {
 
         model.translateX(-vel*0.01);
     }
+    //camera.position.set( model.position.x+80, model.position.y+40, 0 );
+    camera.lookAt(model.position);
 }
 
 function manage_velocity() {
