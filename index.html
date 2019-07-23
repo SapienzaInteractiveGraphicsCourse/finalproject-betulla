@@ -1,19 +1,39 @@
 <html>
+
 <head>
     <meta charset="UTF-8">
-    <title>Betulla project</title>
-    <style>
-        body { margin: 0; }
-        canvas { width: 100%; height: 100% }
-    </style>
+    <title>Betulla Rescue</title>
+
+    <link rel="shortcut icon" href="./images/canadair-icon.png" />
+    <link rel="stylesheet" href="css/index.css">
 </head>
+
 <body>
-<script src="Common/Three.js"></script>
-<script src="Common/MTLLoader.js"></script>
-<script src="Common/GLTFLoader.js"></script>
-<script src="Common/FBXLoader.js"></script>
-<script src="Common/OBJLoader.js"></script>
-<script src="Common/OrbitControls.js"></script>
-<script src="betulla.js"></script>
+	<audio id="menuMusic_id" autoplay>
+  		<source  src="sounds/menu.mp3" >
+	</audio>
+
+	<script src="Common/Three.js"></script>
+	<script src="Common/GLTFLoader.js"></script>
+	<script src="Common/OrbitControls.js"></script>
+	<script src="betulla.js"></script>
+
+	<!-- Principal page -->
+	<div class="wrap">
+		<!-- main menu -->
+		<div class="title_div">
+		  <text id="title">Betulla Rescue</text>
+		</div>
+
+		<div class="start_b_div" id="start_b_id">
+   		  <img id="start" src="./images/start.png" onclick="start_game()">
+  		</div>
+
+  		<!-- game -->
+  		<div class="game" id="game_id">
+  			<div id="timer"></div>
+  		</div>
+	</div>
 </body>
+
 </html>

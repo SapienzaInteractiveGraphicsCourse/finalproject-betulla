@@ -1,0 +1,77 @@
+canvas {
+  width: 100%;
+  height: 100%;
+}
+
+body {
+  margin: 0px;
+}
+
+.wrap{
+  background: url(../images/background.png) no-repeat;
+  background-size: 100% 100%;
+  width: 100%;
+  height: 100%;
+}
+
+@font-face {
+  font-family: Title;
+  src: url(../fonts/Pervitina-Dex-FFP.ttf) format("truetype");
+}
+
+@font-face {
+  font-family: Timer;
+  src: url(../fonts/Flatwheat-Italic.ttf) format("truetype");
+}
+
+#title{
+  display: block;
+  text-align: center;
+  font-family: Title;
+  font-size: 5vw;
+  color: red;
+  text-decoration: overline underline;
+  text-shadow: -1px 0 orange, 0 1px orange, 1px 0 orange, 0 -1px orange;
+}
+
+.start_b_div{
+  margin: 0;
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+}
+
+#start{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 10vw;
+}
+
+.game {
+  position: absolute;
+  top: 0%;
+  left: 0%;
+  width: 100%;
+  height: 100%;
+  display: none;
+}
+
+#game_id {
+  display: none;
+}
+
+#timer{
+  display: block;
+  font-family: "Timer";
+  font-size: 1vw;
+  color: rgb(179, 0, 0);
+  background-color: rgba(0, 179, 179, 0.4);
+  z-index: 100;
+  width: 8vw;
+  height: 1.3vw;
+  position: absolute;
+  margin-left: 91.5%;
+  margin-top: 5px;
+}

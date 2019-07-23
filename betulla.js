@@ -1,66 +1,29 @@
-var camera, scene, renderer, controls;
+var camera, scene, renderer;
 var time = 0;
+var playFlag = false;
 
-init();
-animate();
+function start_game() {
+  var music = document.getElementById("menuMusic_id");
+  music.muted = true;
+  init();
+  playFlag = true;
+  animate();
+}
+
+var clock, startTime;
 
 function init() {
 
+    clock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 20000 );
     scene = new THREE.Scene();
 
-    //scene.background = new THREE.Color( 0xffffff );
+    camera.position.set( 20, 8, 0 );
+    camera.lookAt( scene.position );
 
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
-    document.body.appendChild( renderer.domElement );
-    //
-    window.addEventListener( 'resize', onWindowResize, false );
-
-    controls = new THREE.OrbitControls( camera );
-
-    //controls.update() must be called after any manual changes to the camera's transform
-    camera.position.set( 80, 40, 0 );
-    camera.lookAt( scene.position );
-    controls.update();
-
-    light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-    light.position.set( 0, 200, 0 );
-    scene.add( light );
-    /*light = new THREE.DirectionalLight( 0xffffff );
-    light.position.set( 0, 200, 100 );
-    light.castShadow = true;
-    light.shadow.camera.top = 180;
-    light.shadow.camera.bottom = - 100;
-    light.shadow.camera.left = - 120;
-    light.shadow.camera.right = 120;
-    scene.add( light );*/
-
-    /*var light = new THREE.PointLight( 0xffffff, 20, 100 );
-    light.position.set( 50, 50, 50 );
-    scene.add( light );*/
-
-    // LIGHTS
-    dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
-    dirLight.position.set( - 1, -1.75, 1 );
-    scene.add( dirLight );
-    dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
-    dirLight.position.set(  1, 1.75, -1 );
-    scene.add( dirLight );
-
-    var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
-    var loader  = new THREE.TextureLoader();
-    texture = loader.load( "Models/Sky/sky.jpg" );
-    var material = new THREE.MeshPhongMaterial({
-        map: texture,
-    });
-    var sky = new THREE.Mesh(skyGeo, material);
-    sky.material.side = THREE.BackSide;
-    scene.add(sky);
-
-    var axesHelper = new THREE.AxesHelper( 50 );
-    scene.add( axesHelper );
 
     //Load canadair
 	var loader = new THREE.GLTFLoader();
@@ -115,6 +78,7 @@ function init() {
 	        if (children.name == "parapD2") supp_carrello_alto_dx = children;
 
 	    });
+	    model.add( camera );
 	    scene.add( model );
 
 	},
@@ -130,6 +94,56 @@ function init() {
 		console.log( 'An error happened' );
 
 	});
+
+    light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
+    light.position.set( 0, 200, 0 );
+    scene.add( light );
+    /*light = new THREE.DirectionalLight( 0xffffff );
+    light.position.set( 0, 200, 100 );
+    light.castShadow = true;
+    light.shadow.camera.top = 180;
+    light.shadow.camera.bottom = - 100;
+    light.shadow.camera.left = - 120;
+    light.shadow.camera.right = 120;
+    scene.add( light );*/
+
+    /*var light = new THREE.PointLight( 0xffffff, 20, 100 );
+    light.position.set( 50, 50, 50 );
+    scene.add( light );*/
+
+    // LIGHTS
+    dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
+    dirLight.position.set( - 1, -1.75, 1 );
+    scene.add( dirLight );
+    dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
+    dirLight.position.set(  1, 1.75, -1 );
+    scene.add( dirLight );
+
+    var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
+    var loader  = new THREE.TextureLoader();
+    texture = loader.load( "Models/Sky/sky.jpg" );
+    var material = new THREE.MeshPhongMaterial({
+        map: texture,
+    });
+    var sky = new THREE.Mesh(skyGeo, material);
+    sky.material.side = THREE.BackSide;
+    scene.add(sky);
+
+    var axesHelper = new THREE.AxesHelper( 50 );
+    scene.add( axesHelper );
+
+    window.addEventListener( 'resize', onWindowResize, false );
+
+    //hide main menu
+    document.getElementById('start_b_id').style.display = 'none';
+
+    //show game window
+    document.getElementById('game_id').style.display = 'block';
+
+    game_scene_div = document.getElementById('game_id');
+    game_scene_div.appendChild(renderer.domElement);
+
+    startTime=clock.getElapsedTime();
 }
 
 function onWindowResize() {
@@ -139,9 +153,16 @@ function onWindowResize() {
 }
 
 function animate() {
+    if(!playFlag) return;
+
     renderer.render(scene, camera);
 
     time += 0.01;
+    
+    curTime = clock.getElapsedTime() - startTime -0.5;
+    if (curTime<0) curTime=0.0;
+    document.getElementById('timer').innerHTML = "Timer: " + curTime.toFixed(2);
+
     requestAnimationFrame( animate );
 }
 
@@ -367,7 +388,6 @@ function motion() {
 
         model.translateX(-vel*0.01);
     }
-    //camera.position.set( model.position.x+80, model.position.y+40, 0 );
     camera.lookAt(model.position);
 }
 
@@ -403,6 +423,8 @@ function onDocumentKeyDown(event) {
     var keyCode = event.which;
 
     //console.log(keyCode);
+
+    if(!playFlag) return;
 
     if (keyCode == 77) { // m
         if (motors == 0){
