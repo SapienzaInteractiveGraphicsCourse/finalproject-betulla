@@ -12,6 +12,8 @@ function start_game() {
 
 var clock, startTime;
 
+var messages = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
+
 function init() {
 
     clock = new THREE.Clock();
@@ -129,9 +131,6 @@ function init() {
     sky.material.side = THREE.BackSide;
     scene.add(sky);
 
-    var axesHelper = new THREE.AxesHelper( 50 );
-    scene.add( axesHelper );
-
     window.addEventListener( 'resize', onWindowResize, false );
 
     //hide main menu
@@ -161,7 +160,13 @@ function animate() {
     
     curTime = clock.getElapsedTime() - startTime -0.5;
     if (curTime<0) curTime=0.0;
+
     document.getElementById('timer').innerHTML = "Timer: " + curTime.toFixed(2);
+    document.getElementById('height').innerHTML = "Height: " + height.toFixed(0);
+    document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0);
+    document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
+    document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
+    document.getElementById('conversation').innerHTML = "Camil: " + messages;
 
     requestAnimationFrame( animate );
 }
@@ -177,16 +182,22 @@ var speed_weels = 0;
 var t = 0;
 var s = 0;
 var carrello = true;
-var ground = false;
+var ground = true;
 var vel = 0;
+var height = 0;
 var flag = true;
+var flag_int = true;
+var flag_ext = true;
 var flag_motors = false;
+
+var roll = 0;
+var pitch = 0;
 
 
 function go_motors() {
-    elica_sx.rotation.x += speed_helic;
+    elica_sx.rotation.x -= speed_helic;
     elica_dx.rotation.x += speed_helic;
-    bulbo_sx.rotation.x += speed_helic;
+    bulbo_sx.rotation.x -= speed_helic;
     bulbo_dx.rotation.x += speed_helic;
 }
 
@@ -366,9 +377,18 @@ function set_flap_ext() {
 function motion() {
 
     if (ground) {
-        ruote_ant.rotation.z += speed_weels;
-        ruote_pst_sx.rotation.z += speed_weels;
-        ruote_pst_dx.rotation.z += speed_weels;
+        if (flap_timone.rotation.z > 0 && vel > 150) { // up
+            model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
+            messages = "Perfect! Now close the landing gear [-press C-] and take enough altitude (at least 100 meters) and let's load the water.";
+        }
+        else if (height < 10){
+            vel += 0.1;
+            messages = "OK, now you have to get as much speed as possible [-hold B-] (at least 200 km / h) and pull up [-hold S-]. Remember not to veer off! Good luck";
+            ruote_ant.rotation.z += speed_weels;
+            ruote_pst_sx.rotation.z += speed_weels;
+            ruote_pst_dx.rotation.z += speed_weels;
+        }
+        if (height > 100) ground = false;
     }
     else {
 
@@ -386,36 +406,55 @@ function motion() {
             model.rotateX(-Math.PI/400*flap_int_sx.rotation.z);
         }
 
-        model.translateX(-vel*0.01);
     }
+
+    model.translateX(-vel*0.01);
     camera.lookAt(model.position);
+
+    roll = -model.rotation.x*180/Math.PI;
+    pitch = -model.rotation.z*180/Math.PI;
 }
 
 function manage_velocity() {
     if (motors == 0) {
-        if (vel > 0) vel -= 1;
+        if (vel > 0) vel += model.rotation.z - 0.1;
     }
-    else if (vel < 150 + model.rotation.z*30) {
-        vel += 1;
+    if (vel < 150) {
+        if (motors != 0 && model.rotation.z >= 0) vel += 1;
         if (!ground) stall();
     }
-    else if (vel < 206 + model.rotation.z*30 && motors > 1) vel += 0.67;
-    else if (vel < 263 + model.rotation.z*30 && motors > 2) vel += 0.5;
-    else if (vel < 320 + model.rotation.z*30 && motors > 3) vel += 0.5;
-    else if (vel < 376 + model.rotation.z*30 && motors > 4) vel += 0.33;
+    else if (vel < 206 - model.rotation.z*20 && motors > 1) vel += 0.67;
+    else if (vel < 263 - model.rotation.z*20 && motors > 2) vel += 0.5;
+    else if (vel < 320 - model.rotation.z*20 && motors > 3) vel += 0.5;
+    else if (vel < 376 - model.rotation.z*20 && motors > 4) vel += 0.33;
 
-    else if (vel > 320 + model.rotation.z*30 && motors < 5) vel -= 0.5;
-    else if (vel > 263 + model.rotation.z*30 && motors < 4) vel -= 0.5;
-    else if (vel > 206 + model.rotation.z*30 && motors < 3) vel -= 0.5;
-    else if (vel > 150 + model.rotation.z*30 && motors < 2) vel -= 0.5;
+    else if (vel > 320 + model.rotation.z*20 && motors < 5) vel -= 0.5;
+    else if (vel > 263 + model.rotation.z*20 && motors < 4) vel -= 0.5;
+    else if (vel > 206 + model.rotation.z*20 && motors < 3) vel -= 0.5;
+    else if (vel > 151 + model.rotation.z*20 && motors < 2) vel -= 0.5;
+
+    if (vel < 200 && !ground) messages = "be careful, you are flying too slowly! you should increase the speed [-hold B-]";
+    if (height < 70 && !ground) messages = "be careful, you are flying too low, increase the altitude!";
+
+    height = model.position.y*0.1;
 
 }
 
 function stall() {
-    vel += 1;
-    model.position.y += -1;
-    if (model.rotation.z > Math.PI/2) model.rotation.z -= Math.PI/500;
-    else model.rotation.z += Math.PI/500;
+    messages = "Oh no, you stalled! Recovers as much speed as possible [-hold B-] and pull up [hold down S]";
+    if (model.rotation.z > 0) vel += 2*model.rotation.z;
+
+    if (flap_timone.rotation.z > 0) flap_timone.rotation.z -= Math.PI/300;
+    else flap_timone.rotation.z += Math.PI/300;
+    if (flap_ext_sx.rotation.z > 0) flap_ext_sx.rotation.z -= Math.PI/300;
+    else flap_ext_sx.rotation.z += Math.PI/250;
+    if (flap_ext_dx.rotation.z > 0) flap_ext_dx.rotation.z -= Math.PI/300;
+    else flap_ext_dx.rotation.z += Math.PI/250;
+
+    model.position.y += -0.1;
+
+    if (model.rotation.z > Math.PI/2) model.rotation.z -= Math.PI/300;
+    else model.rotation.z += Math.PI/300;
 }
 
 document.addEventListener("keydown", onDocumentKeyDown, false);
@@ -444,6 +483,12 @@ function onDocumentKeyDown(event) {
         }
     }
     else if (keyCode == 66) { // w
+        clearInterval(reset);
+        clearInterval(reset_int);
+        clearInterval(reset_ext);
+        flag = false;
+        flag_int = false;
+        flag_ext = false;
         if (motors != 0 && motors != 5) {
             motors += 1;
             speed_helic += 0.05;
@@ -455,6 +500,12 @@ function onDocumentKeyDown(event) {
 
     }
     else if (keyCode == 78) { // s
+        clearInterval(reset);
+        clearInterval(reset_int);
+        clearInterval(reset_ext);
+        flag = false;
+        flag_int = false;
+        flag_ext = false;
         if (motors != 0 && motors != 1) {
             motors -= 1;
             speed_helic -= 0.05;
@@ -465,6 +516,8 @@ function onDocumentKeyDown(event) {
         clearInterval(reset_int);
         clearInterval(reset_ext);
         flag = false;
+        flag_int = false;
+        flag_ext = false;
         if (flap_int_dx.rotation.z < 0) {
             flap_int_dx.rotation.z += Math.PI/200;
             flap_int_sx.rotation.z -= Math.PI/600;
@@ -482,6 +535,8 @@ function onDocumentKeyDown(event) {
         clearInterval(reset_int);
         clearInterval(reset_ext);
         flag = false;
+        flag_int = false;
+        flag_ext = false;
         if (flap_int_sx.rotation.z < 0) {
             flap_int_sx.rotation.z += Math.PI/200;
             flap_int_dx.rotation.z -= Math.PI/600;
@@ -499,6 +554,8 @@ function onDocumentKeyDown(event) {
         clearInterval(reset_int);
         clearInterval(reset_ext);
         flag = false;
+        flag_int = false;
+        flag_ext = false;
         if (flap_timone.rotation.z > - Math.PI/8) {
             flap_timone.rotation.z -= Math.PI/300;
             flap_ext_sx.rotation.z += Math.PI/400;
@@ -511,6 +568,8 @@ function onDocumentKeyDown(event) {
         clearInterval(reset_int);
         clearInterval(reset_ext);
         flag = false;
+        flag_int = false;
+        flag_ext = false;
         if (flap_timone.rotation.z <  Math.PI/8) {
             flap_timone.rotation.z += Math.PI / 300;
             flap_ext_sx.rotation.z -= Math.PI / 400;
@@ -526,11 +585,17 @@ function onDocumentKeyDown(event) {
     }
 
     else if (keyCode == 79) { // o
-        reset_int = setInterval(set_flap_int, 10);
+        if (!flag_int) {
+            flag_int = true;
+            reset_int = setInterval(set_flap_int, 10);
+        }
     }
 
     else if (keyCode == 80) { // p
-        reset_ext = setInterval(set_flap_ext, 10);
+        if (!flag_ext) {
+            flag_ext = true;
+            reset_ext = setInterval(set_flap_ext, 10);
+        }
     }
 
     else if (keyCode == 67) { // c

@@ -24,6 +24,11 @@ body {
   src: url(../fonts/Flatwheat-Italic.ttf) format("truetype");
 }
 
+@font-face {
+  font-family: Messages;
+  src: url(../fonts/OstrichSans-Black.otf) format("truetype");
+}
+
 #title{
   display: block;
   text-align: center;
@@ -74,4 +79,73 @@ body {
   position: absolute;
   margin-left: 91.5%;
   margin-top: 5px;
+}
+
+#height{
+  display: block;
+  font-family: "Timer";
+  font-size: 1.3vw;
+  color: rgb(179, 0, 0);
+  background-color: rgba(0, 179, 179, 0.4);
+  z-index: 100;
+  width: 8vw;
+  height: 2.0vw;
+  position: absolute;
+  margin-left: 91.5%;
+  margin-top: 75px;
+}
+
+#velocity{
+  display: block;
+  font-family: "Timer";
+  font-size: 1.3vw;
+  color: rgb(179, 0, 0);
+  background-color: rgba(0, 179, 179, 0.4);
+  z-index: 100;
+  width: 8vw;
+  height: 2.0vw;
+  position: absolute;
+  margin-left: 91.5%;
+  margin-top: 120px;
+}
+
+#roll{
+    display: block;
+    font-family: "Timer";
+    font-size: 0.9vw;
+    color: rgb(179, 0, 0);
+    background-color: rgba(0, 179, 179, 0.4);
+    z-index: 100;
+    width: 8vw;
+    height: 2.0vw;
+    position: absolute;
+    margin-left: 91.5%;
+    margin-top: 200px;
+}
+#pitch{
+     display: block;
+     font-family: "Timer";
+     font-size: 0.9vw;
+     color: rgb(179, 0, 0);
+     background-color: rgba(0, 179, 179, 0.4);
+     z-index: 100;
+     width: 8vw;
+     height: 2.0vw;
+     position: absolute;
+     margin-left: 91.5%;
+     margin-top: 250px;
+ }
+
+#conversation{
+  display: block;
+  font-family: "Messages";
+  font-size: 1.0vw;
+  color: rgb(179, 0, 0);
+  background-color: rgba(0, 179, 179, 0.4);
+  z-index: 100;
+  width: 8vw;
+  height: 18.0vw;
+  position: absolute;
+  margin-left: 91.5%;
+  margin-top: 600px;
 }
