@@ -8,7 +8,7 @@ body {
 }
 
 .wrap{
-  background: url(../images/background.png) no-repeat;
+  background: url(../images/burn.jpg) no-repeat;
   background-size: 100% 100%;
   width: 100%;
   height: 100%;
@@ -34,7 +34,7 @@ body {
   text-align: center;
   font-family: Title;
   font-size: 5vw;
-  color: red;
+  color: darkred;
   text-decoration: overline underline;
   text-shadow: -1px 0 orange, 0 1px orange, 1px 0 orange, 0 -1px orange;
 }
@@ -61,6 +61,27 @@ body {
   width: 100%;
   height: 100%;
   display: none;
+}
+
+/* The Modal (background) */
+.modal {
+    display: none; /* Hidden by default */
+    position: fixed; /* Stay in place */
+    left: -900px;
+    top: -450px;
+    width: 1970px; /* Full width */
+    height: 992px; /* Full height */
+    overflow: auto; /* Enable scroll if needed */
+    background-color: rgba(1,1,1, 0.5); /* Black w/ opacity */
+}
+
+/* Modal Content */
+.modal-content {
+    background-color: rgba(179,180,1, 0.9);
+    margin: 15%;
+    padding: 10px;
+    border: 3px solid #888;
+    width: 70%;
 }
 
 #game_id {

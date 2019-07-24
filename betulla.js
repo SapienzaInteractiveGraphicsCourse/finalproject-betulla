@@ -11,6 +11,24 @@ function start_game() {
   setInterval(messages, 1000);
 }
 
+function instructions() {
+    var modal = document.getElementById("myModal");
+
+    var span = document.getElementsByClassName("close")[0];
+
+    modal.style.display = "block";
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
 var clock, startTime;
 
 var message = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
@@ -144,6 +162,8 @@ function init() {
     game_scene_div.appendChild(renderer.domElement);
 
     startTime=clock.getElapsedTime();
+
+
 }
 
 function onWindowResize() {

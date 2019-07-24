@@ -26,7 +26,47 @@
 		</div>
 
 		<div class="start_b_div" id="start_b_id">
-   		  <img id="start" src="./images/start.png" onclick="start_game()">
+   		  <img id="start" src="./images/button_play.png" onclick="start_game()">
+   		  <img id="myBtn" src="./images/button_instructions.png" onclick="instructions()">
+
+
+            <!-- The Modal -->
+            <div id="myModal" class="modal">
+
+                <!-- Modal content -->
+                <div class="modal-content">
+                    <span class="close">&times;</span>
+                    <p><font size="4"> The goal of the game is to extinguish a fire. You are a pilot of a Bombardier-415, well known as Canadair, flanked by your copilot Camil that will give you some useful suggestions during the game. First of all you have to decide between 4 difficulty levels:
+                        <br><strong>Beginner:</strong> no wind in the game, you can fill the tank at less than 40 meters, the radius of the water falling on the fire is X.
+                        <br><strong>Easy:</strong> wind speed of 10 km/h, you can fill the tank at less than 30 meters, the radius of the water falling on the fire is X.
+                        <br><strong>Medium:</strong> wind speed of 20 km/h, you can fill the tank at less than 20 meters, the radius of the water falling on the fire is X.
+                        <br><strong>Hard:</strong> wind speed of 30 km/h, two active fires, you can fill the tank at less than 10 meters, the radius of the water falling on the fire is X.
+                        <br><br>The fire will expand in each direction, faster in the direction of the wind. You have to take off, fill the tank and empty it on the fire. You have to be as fast as you can to avoid the expansion of the fire.
+                        Don't waste time, each second is precious.
+                        <br><br>You can use the set 'WASD' to control the pitch and the roll of the airplane as if it were the cloche.
+                        <br><strong>W</strong> to nosedive;
+                        <br><strong>S</strong> to pull up;
+                        <br><strong>A</strong> to tilt to the left;
+                        <br><strong>D</strong> to tilt to the right;
+                        <br>Remember that once you leave the cloche, it will remain in position until you change its position.
+                        You can reset the roll angle by pressing the <strong>O</strong> button, while you can reset the pitch angle by pressing the <strong>P</strong> button.
+                        In an emergency you can use the <strong>R</strong> button to completely reset the system, which will start flying at a
+                        stable altitude with no roll and pitch angles.
+                        <br><br>You can use the keys <strong>M</strong> to turn on and turn off the engine, and the keys <strong>B</strong> and <strong>N</strong> to increase and decrease the velocity. You have 5 different speeds:
+                        <br><strong>Speed 0:</strong> engines off;
+                        <br><strong>Speed 1:</strong> approx. 150 km/h;
+                        <br><strong>Speed 2:</strong> approx. 206 km/h;
+                        <br><strong>Speed 3:</strong> approx. 263 km/h;
+                        <br><strong>Speed 4:</strong> approx. 320 km/h;
+                        <br><strong>Speed 5:</strong> approx. 376 km/h;
+                        <br>Be careful never to go below 150 km/h or you'll stall. In any case, your co-pilot Camil will warn you if your speed is too low.
+                        <br><br>You can use the <strong>C</strong> key to close the aircraft cart. Remember not to approach the water with the airplane trolley open or you risk falling.
+
+                    </p>
+                </div>
+
+            </div>
+
   		</div>
 
   		<!-- game -->
@@ -39,6 +79,8 @@
 			<div id="conversation"></div>
   		</div>
 	</div>
+
+
 </body>
 
 </html>
