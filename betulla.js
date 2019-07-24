@@ -8,11 +8,12 @@ function start_game() {
   init();
   playFlag = true;
   animate();
+  setInterval(messages, 1000);
 }
 
 var clock, startTime;
 
-var messages = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
+var message = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
 
 function init() {
 
@@ -166,7 +167,7 @@ function animate() {
     document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0);
     document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
     document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
-    document.getElementById('conversation').innerHTML = "Camil: " + messages;
+    document.getElementById('conversation').innerHTML = "Camil: " + message;
 
     requestAnimationFrame( animate );
 }
@@ -189,6 +190,9 @@ var flag = true;
 var flag_int = true;
 var flag_ext = true;
 var flag_motors = false;
+var tank = false;
+var sea = false;
+var fire = false;
 
 var roll = 0;
 var pitch = 0;
@@ -379,11 +383,8 @@ function motion() {
     if (ground) {
         if (flap_timone.rotation.z > 0 && vel > 150) { // up
             model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
-            messages = "Perfect! Now close the landing gear [-press C-] and take enough altitude (at least 100 meters) and let's load the water.";
         }
-        else if (height < 10){
-            vel += 0.1;
-            messages = "OK, now you have to get as much speed as possible [-hold B-] (at least 200 km / h) and pull up [-hold S-]. Remember not to veer off! Good luck";
+        else if (height == 0){
             ruote_ant.rotation.z += speed_weels;
             ruote_pst_sx.rotation.z += speed_weels;
             ruote_pst_dx.rotation.z += speed_weels;
@@ -420,7 +421,8 @@ function manage_velocity() {
         if (vel > 0) vel += model.rotation.z - 0.1;
     }
     if (vel < 150) {
-        if (motors != 0 && model.rotation.z >= 0) vel += 1;
+        if ( model.rotation.z >= 0 && ground && motors > 1) vel += 1.2;
+        if (motors != 0 && !ground) vel += 1;
         if (!ground) stall();
     }
     else if (vel < 206 - model.rotation.z*20 && motors > 1) vel += 0.67;
@@ -432,9 +434,6 @@ function manage_velocity() {
     else if (vel > 263 + model.rotation.z*20 && motors < 4) vel -= 0.5;
     else if (vel > 206 + model.rotation.z*20 && motors < 3) vel -= 0.5;
     else if (vel > 151 + model.rotation.z*20 && motors < 2) vel -= 0.5;
-
-    if (vel < 200 && !ground) messages = "be careful, you are flying too slowly! you should increase the speed [-hold B-]";
-    if (height < 70 && !ground) messages = "be careful, you are flying too low, increase the altitude!";
 
     height = model.position.y*0.1;
 
@@ -455,6 +454,19 @@ function stall() {
 
     if (model.rotation.z > Math.PI/2) model.rotation.z -= Math.PI/300;
     else model.rotation.z += Math.PI/300;
+}
+
+function messages() {
+    if (height == 0 && motors == 0) message = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
+    else if (height == 0 && motors != 0) message = "OK, now you have to get as much speed as possible [-hold B-] (at least 200 km / h) and pull up [-hold S-]. Remember not to veer off! Good luck";
+    else if (height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take enough altitude (at least 100 meters) and let's load the water.";
+    else if (vel < 200) message = "be careful, you are flying too slowly! you should increase the speed [-hold B-]";
+    else if (height < 70) message = "be careful, you are flying too low, increase the altitude!";
+    else if (sea && !tank) message = "OK, move closer to the water to fill the tank [-press space bar-]";
+    else if (!tank) message = "go to the sea and fill the tank!";
+    else if (fire) message = "perfect, empty the tank to put out the fire [-press space bar-]";
+    else if (tank) message = "Come on, reach the fire and empty the tank!";
+
 }
 
 document.addEventListener("keydown", onDocumentKeyDown, false);
