@@ -9,13 +9,12 @@
 </head>
 
 <body>
-	<audio id="menuMusic_id" autoplay>
+	<audio id="menuMusic_id" autoplay loop>
   		<source  src="sounds/menu.mp3" >
 	</audio>
 
 	<script src="Common/Three.js"></script>
 	<script src="Common/GLTFLoader.js"></script>
-	<script src="Common/OrbitControls.js"></script>
 	<script src="betulla.js"></script>
 
 	<!-- Principal page -->
@@ -26,49 +25,61 @@
 		</div>
 
 		<div class="start_b_div" id="start_b_id">
-   		  <img id="start" src="./images/button_play.png" onclick="start_game()">
-   		  <img id="myBtn" src="./images/button_instructions.png" onclick="instructions()">
+   		  <img id="start_b" src="./images/button_play.png" onclick="start_game()">
+   		  <img id="start_b" src="./images/button_instructions.png" onclick="instructions()">
+   		</div>
 
+   		<div id="audio_div">
+   		  <img id="audio" src="images/unmute.png" style="width:30px;height:30px;" onclick="switchImage(1)">
+   		</div>
 
-            <!-- The Modal -->
-            <div id="myModal" class="modal">
+        <div class="column" id="diff">DIFFICULTY:
+          <select id="lista_diff" >
+            <option>Beginner</option>
+            <option>Easy</option>
+            <option selected>Normal</option>
+            <option >Hard</option>
+          </select>
+        </div>
 
-                <!-- Modal content -->
-                <div class="modal-content">
-                    <span class="close">&times;</span>
-                    <p><font size="5"> The objective of the game is to extinguish a fire. You're the pilot of a Bombardier-415, better known as Canadair, flanked by your trusty co-pilot Camil who will give you many useful tips during the game.
-                        First of all you have to choose the difficulty level among the 4 proposed:
-                        <br><strong>Beginner:</strong> the wind is absent; you can fill the tank up to 40 meters from the sea; the radius of the water you throw on the fire is X meters
-                        <br><strong>Easy:</strong> the wind moves at 10 km/h; you can fill the tank up to 30 metres from the sea; the radius of the water you throw on the fire is X metres.
-                        <br><strong>Medium:</strong> the wind moves at 20 km/h; you can fill the tank up to 20 metres from the sea; the radius of the water you throw on the fire is X metres.
-                        <br><strong>Hard:</strong> two fires at the same time; the wind moves at 30 km/h; you can fill the tank up to 10 metres from the sea; the radius of the water you throw on the fire is X metres.
-                        <br><br>The fire spreads in every direction, with a higher speed in the wind direction. You will have to take off, fill the tank on the sea and empty it on the fire.
-                        You will need to be as fast as possible to stop the uncontrolled expansion of the fire. Don't waste time, every second is precious.
-                        <br><br>You can use the 'WASD' command set to control the aircraft's roll and pitch angles as if it were a cloche.
-                        <br><strong>W</strong> to nosedive;
-                        <br><strong>S</strong> to pull up;
-                        <br><strong>A</strong> to tilt to the left;
-                        <br><strong>D</strong> to tilt to the right;
-                        <br>Remember that once you have put the cloche in position, it will remain fixed until it receives another command.
-                        You can reset the roll angle by pressing the <strong>O</strong> key, while you can reset the pitch angle by pressing the <strong>P</strong> key.
-                        In an emergency you can use the <strong>R</strong> key to completely reset the system, which will start flying at a stable altitude with zero roll and pitch angles.
-                        <br><br>You can use the M button to turn the engines on and off (there is no reason why you should turn off the engines during flight),
-                        and the <strong>B</strong> and <strong>N</strong> buttons to increase and decrease the speed, respectively.
-                        There are 6 speeds available:
-                        <br><strong>Speed 0:</strong> engines off;
-                        <br><strong>Speed 1:</strong> approx. 150 km/h;
-                        <br><strong>Speed 2:</strong> approx. 206 km/h;
-                        <br><strong>Speed 3:</strong> approx. 263 km/h;
-                        <br><strong>Speed 4:</strong> approx. 320 km/h;
-                        <br><strong>Speed 5:</strong> approx. 376 km/h;
-                        <br>Be careful never to go below 150 km/h or you will stall. In any case, your co-pilot Camil will warn you if you are flying too slow.
-                        <br><br>You can use the <strong>C</strong> key to close the aircraft's landing gear.
-                        Remember not to get close to the water with the airplane trolley open or you will risk crashing.
-                    </p>
-                </div>
-
-            </div>
-
+  		<!-- The Modal -->
+  		<div id="myModal" class="modal">
+  		    <div class="modal-content">
+  		        <span class="close">&times;</span>
+  		        <p><font size="5"> The objective of the game is to extinguish a fire. You're the pilot of a Bombardier-415, better known as Canadair, flanked by your trusty co-pilot Camil who will give you many useful tips during the game.
+  		            First of all you have to choose the difficulty level among the 4 proposed:
+  		            <br><strong>Beginner:</strong> the wind is absent; you can fill the tank up to 40 meters from the sea; the radius of the water you throw on the fire is X meters
+  		            <br><strong>Easy:</strong> the wind moves at 10 km/h; you can fill the tank up to 30 metres from the sea; the radius of the water you throw on the fire is X metres.
+  		            <br><strong>Medium:</strong> the wind moves at 20 km/h; you can fill the tank up to 20 metres from the sea; the radius of the water you throw on the fire is X metres.
+  		            <br><strong>Hard:</strong> two fires at the same time; the wind moves at 30 km/h; you can fill the tank up to 10 metres from the sea; the radius of the water you throw on the fire is X metres.
+  		            <br><br>The fire spreads in every direction, with a higher speed in the wind direction. You will have to take off, fill the tank on the sea and empty it on the fire.
+  		            You will need to be as fast as possible to stop the uncontrolled expansion of the fire. Don't waste time, every second is precious.
+  		            <br><br>You can use the 'WASD' command set to control the aircraft's roll and pitch angles as if it were a cloche.
+  		            <br><center>
+  		            	<strong>W</strong> to nosedive;
+  		            	<br><strong>S</strong> to pull up;
+  		            	<br><strong>A</strong> to tilt to the left;
+  		            	<br><strong>D</strong> to tilt to the right;
+  		            </center>
+  		            <br>Remember that once you have put the cloche in position, it will remain fixed until it receives another command.
+  		            You can reset the roll angle by pressing the <strong>O</strong> key, while you can reset the pitch angle by pressing the <strong>P</strong> key.
+  		            In an emergency you can use the <strong>R</strong> key to completely reset the system, which will start flying at a stable altitude with zero roll and pitch angles.
+  		            <br><br>You can use the M button to turn the engines on and off (there is no reason why you should turn off the engines during flight),
+  		            and the <strong>B</strong> and <strong>N</strong> buttons to increase and decrease the speed, respectively.
+  		            There are 6 speeds available:
+  		            <br><center>
+  		            	<strong>Speed 0:</strong> engines off;
+  		            	<br><strong>Speed 1:</strong> approx. 150 km/h;
+  		            	<br><strong>Speed 2:</strong> approx. 206 km/h;
+  		            	<br><strong>Speed 3:</strong> approx. 263 km/h;
+  		            	<br><strong>Speed 4:</strong> approx. 320 km/h;
+  		            	<br><strong>Speed 5:</strong> approx. 376 km/h;
+  		            </center>
+  		            <br>Be careful never to go below 150 km/h or you will stall. In any case, your co-pilot Camil will warn you if you are flying too slow.
+  		            <br><br>You can use the <strong>C</strong> key to close the aircraft's landing gear.
+  		            Remember not to get close to the water with the airplane trolley open or you will risk crashing.
+  		        </p>
+  		    </div>
   		</div>
 
   		<!-- game -->

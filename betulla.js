@@ -1,10 +1,10 @@
 var camera, scene, renderer;
 var time = 0;
 var playFlag = false;
+var menu_music= document.getElementById("menuMusic_id");
 
 function start_game() {
-  var music = document.getElementById("menuMusic_id");
-  music.muted = true;
+  menu_music.muted = true;
   init();
   playFlag = true;
   animate();
@@ -30,13 +30,39 @@ function instructions() {
 }
 
 var clock, startTime;
+var difficulty_html, difficulty;
+var fire_speed;
+const fire_speed_h=30;
+const fire_speed_m=20;
+const fire_speed_e=10;
+const fire_speed_b=0;
+var motor_sound=new initialize_sound("sounds/motors.ogg");
+motor_sound.sound.loop=true;
+var cart_sound =new initialize_sound("sounds/cart.mp3");
+cart_sound.sound.playbackRate=0.8;
 
 var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
 
 function init() {
 
+    difficulty_html = document.getElementById("lista_diff");
+    difficulty = difficulty_html.options[difficulty_html.selectedIndex].text;
+
+    if(difficulty === "Hard"){
+        fire_speed = fire_speed_h;
+    }
+    if(difficulty === "Normal"){
+        fire_speed = fire_speed_m;
+    }
+    if(difficulty === "Easy"){
+        fire_speed = fire_speed_e;
+    }
+    if(difficulty === "Beginner"){
+        fire_speed = fire_speed_b;
+    }
+
     clock = new THREE.Clock();
-    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 20000 );
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000000 );
     scene = new THREE.Scene();
 
     camera.position.set( 20, 8, 0 );
@@ -142,21 +168,26 @@ function init() {
 
     var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
     var loader  = new THREE.TextureLoader();
-    texture = loader.load( "Models/Sky/sky.jpg" );
-    var material = new THREE.MeshPhongMaterial({
-        map: texture,
+    texture = loader.load( "images/sky.jpg" );
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
+
+    const shader = THREE.ShaderLib.equirect;
+    var material = new THREE.ShaderMaterial({
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        depthWrite: false,
+        side: THREE.BackSide,
     });
+    material.uniforms.tEquirect.value = texture;
     var sky = new THREE.Mesh(skyGeo, material);
-    sky.material.side = THREE.BackSide;
     scene.add(sky);
 
     window.addEventListener( 'resize', onWindowResize, false );
 
-    //hide main menu
-    document.getElementById('start_b_id').style.display = 'none';
-
     //show game window
-    document.getElementById('game_id').style.display = 'block';
+    document.getElementById('game_id').style.display = 'block';;
 
     game_scene_div = document.getElementById('game_id');
     game_scene_div.appendChild(renderer.domElement);
@@ -182,9 +213,9 @@ function animate() {
     curTime = clock.getElapsedTime() - startTime -0.5;
     if (curTime<0) curTime=0.0;
 
-    document.getElementById('timer').innerHTML = "Timer: " + curTime.toFixed(2);
-    document.getElementById('height').innerHTML = "Height: " + height.toFixed(0);
-    document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0);
+    document.getElementById('timer').innerHTML = "Timer: " + compute_time(curTime);
+    document.getElementById('height').innerHTML = "Height: " + height.toFixed(0)+" m";
+    document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0)+" km/h";
     document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
     document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
     document.getElementById('conversation').innerHTML = "Camil: " + message;
@@ -483,7 +514,7 @@ function messages() {
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
     else if (sea && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
-    else if (!tank) message = "Go to the sea to fill the tank!";
+    else if (!tank) message = "ok, now go to the sea to fill the tank!";
     else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
     else if (tank) message = "Come on, get to the fire and empty the tank!";
 
@@ -502,11 +533,16 @@ function onDocumentKeyDown(event) {
             motors = 1;
             speed_helic = 0.05;
             engine = setInterval(go_motors, 1);
+            //sound on
+            motor_sound.sound.play();
         }
         else {
             motors = 0;
             speed_helic = 0;
             clearInterval(engine);
+            //sound off
+            motor_sound.sound.pause();
+            motor_sound.sound.currentTime = 0;
         }
         if (!flag_motors) {
             flag_motors = true;
@@ -524,6 +560,7 @@ function onDocumentKeyDown(event) {
         if (motors != 0 && motors != 5) {
             motors += 1;
             speed_helic += 0.05;
+            motor_sound.sound.playbackRate +=.7;
         }
         if (weels != 5) {
             weels += 1;
@@ -541,6 +578,7 @@ function onDocumentKeyDown(event) {
         if (motors != 0 && motors != 1) {
             motors -= 1;
             speed_helic -= 0.05;
+            motor_sound.sound.playbackRate -=.7;
         }
     }
     else if (keyCode == 65) { // a
@@ -631,12 +669,76 @@ function onDocumentKeyDown(event) {
     }
 
     else if (keyCode == 67) { // c
-        if (carrello) {
+        if (carrello && height>0) {
             t = 0;
             s = 0;
             carrello = false;
+            cart_sound.sound.play();
             setInterval(close_doors_ant, 10);
             setInterval(close_doors_back, 10);
         }
     }
 };
+
+//implement timer
+function compute_time(time){
+    var hours = Math.floor(time / 3600);
+    time = time - hours * 3600;
+    var minutes = Math.floor(time / 60);
+    var seconds = time - minutes * 60;
+    return(hours.toFixed(0)+":"+minutes.toFixed(0)+":"+seconds.toFixed(2));
+}
+
+//Implement audio
+function initialize_sound(src) {
+  this.sound = document.createElement("audio");
+  this.sound.src = src;
+  this.sound.setAttribute("preload", "auto");
+  this.sound.setAttribute("controls", "none");
+  this.sound.style.display = "none";
+  document.body.appendChild(this.sound);
+}
+
+function switchImage(id){ //// id 1 = mute/unmute button, 2= pause/play image;
+  if(id ===1) {
+    var abs_path1 = document.getElementById("audio").src;
+    var path1 = abs_path1.substring(abs_path1.lastIndexOf("/"), abs_path1.length);
+    if (path1 === '/unmute.png') {
+      audio_game(0);
+      document.getElementById("audio").src = 'images/mute.png';
+    }
+    else {
+      audio_game(1);
+      document.getElementById("audio").src = 'images/unmute.png';
+    }
+  }
+  if (id === 2){
+    var abs_path2 = document.getElementById("play_pause").src;
+    var path2 = abs_path2.substring(abs_path2.lastIndexOf("/"), abs_path2.length);
+    if (path2 === '/resume.png') {
+      document.getElementById("play_pause").src = 'img/pause.png';
+    }
+    else {
+      document.getElementById("play_pause").src = 'img/resume.png';
+    }
+  }
+}
+
+//control audio volume
+function audio_game(val){
+  if (val === 0){
+    if (!playFlag){
+        menu_music.muted=true;
+    }
+    motor_sound.sound.volume=0;
+    cart_sound.sound.volume=0;
+  }
+  else{
+    if (!playFlag){
+        menu_music.muted=false;
+    }
+    motor_sound.sound.volume=1;
+    cart_sound.sound.volume=1;
+  }
+}
+
