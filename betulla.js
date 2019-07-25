@@ -31,7 +31,7 @@ function instructions() {
 
 var clock, startTime;
 
-var message = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
+var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
 
 function init() {
 
@@ -477,15 +477,15 @@ function stall() {
 }
 
 function messages() {
-    if (height == 0 && motors == 0) message = "Hi I am Camil, your copilot for this mission. Let's not waste time, heard the commander? We must put out the fire! I remind you how to take off, first of all turn on the engines [-press M-],";
-    else if (height == 0 && motors != 0) message = "OK, now you have to get as much speed as possible [-hold B-] (at least 200 km / h) and pull up [-hold S-]. Remember not to veer off! Good luck";
-    else if (height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take enough altitude (at least 100 meters) and let's load the water.";
-    else if (vel < 200) message = "be careful, you are flying too slowly! you should increase the speed [-hold B-]";
-    else if (height < 70) message = "be careful, you are flying too low, increase the altitude!";
-    else if (sea && !tank) message = "OK, move closer to the water to fill the tank [-press space bar-]";
-    else if (!tank) message = "go to the sea and fill the tank!";
-    else if (fire) message = "perfect, empty the tank to put out the fire [-press space bar-]";
-    else if (tank) message = "Come on, reach the fire and empty the tank!";
+    if (height == 0 && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
+    else if (height == 0 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 200 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
+    else if (height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
+    else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
+    else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
+    else if (sea && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
+    else if (!tank) message = "Go to the sea to fill the tank!";
+    else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
+    else if (tank) message = "Come on, get to the fire and empty the tank!";
 
 }
 
