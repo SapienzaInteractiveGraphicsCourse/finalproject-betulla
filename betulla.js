@@ -29,6 +29,24 @@ function instructions() {
     }
 }
 
+function commands() {
+    var modal = document.getElementById("myModal_2");
+
+    var span = document.getElementsByClassName("close")[0];
+
+    modal.style.display = "block";
+
+    span.onclick = function() {
+        modal.style.display = "none";
+    }
+
+    window.onclick = function(event) {
+        if (event.target == modal) {
+            modal.style.display = "none";
+        }
+    }
+}
+
 var clock, startTime;
 var difficulty_html, difficulty;
 var fire_speed;
@@ -514,7 +532,7 @@ function messages() {
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
     else if (sea && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
-    else if (!tank) message = "ok, now go to the sea to fill the tank!";
+    else if (!tank) message = "Ok, now go to the sea to fill the tank!";
     else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
     else if (tank) message = "Come on, get to the fire and empty the tank!";
 
