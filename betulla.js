@@ -458,7 +458,7 @@ function motion() {
             ruote_pst_sx.rotation.z += speed_weels;
             ruote_pst_dx.rotation.z += speed_weels;
         }
-        if (height > 100) ground = false;
+        if (height > 10) ground = false;
     }
     else {
 
@@ -528,6 +528,8 @@ function stall() {
 function messages() {
     if (height == 0 && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
     else if (height == 0 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 200 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
+    else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
+    else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
     else if (height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
