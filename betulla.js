@@ -160,6 +160,19 @@ function init() {
 
 	});
 
+    loader.load('Models/terrain/scene.gltf', function(gltf){
+        terrain = gltf.scene;
+        terrain.position.set(0,0,0);
+        terrain.scale.set(4000,4000,4000);
+        scene.add(terrain);
+    },
+    function(xhr){
+        console.log((xhr.loaded / xhr.total*100) + '% loaded')
+    },
+    function(error){
+        console.log("An error happened")
+    });
+
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
     light.position.set( 0, 200, 0 );
     scene.add( light );
