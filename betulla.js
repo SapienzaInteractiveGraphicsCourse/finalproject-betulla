@@ -254,30 +254,30 @@ function animate() {
     requestAnimationFrame( animate );
 }
 
-var engine;
-var reset;
-var reset_int;
-var reset_ext;
-var motors = 0;
-var weels = 0;
-var speed_helic = 0;
-var speed_weels = 0;
-var t = 0;
-var s = 0;
-var carrello = true;
-var ground = true;
-var vel = 0;
-var height = 0;
-var flag = true;
-var flag_int = true;
-var flag_ext = true;
-var flag_motors = false;
-var tank = false;
-var sea = false;
-var fire = false;
+var engine; // variabile associata alla funzione go_motors (necessaria per SetInterval)
+var reset; // variabile associata alla funzione reset_attitude (necessaria per SetInterval)
+var reset_int; // variabile associata alla funzione set_flap_int (necessaria per SetInterval)
+var reset_ext; // variabile associata alla funzione set_flap_ext (necessaria per SetInterval)
+var motors = 0; // livello velocità dei motori (0 - 1 - 2 - 3 - 4 - 5)
+var weels = 0; // livello velocità delle ruote (0 - 1 - 2 - 3 - 4 - 5)
+var speed_helic = 0; // velocità delle eliche
+var speed_weels = 0; // velocità delle ruote
+var t = 0; // variabile per interpolazione
+var s = 0; // variabile per interpolazione
+var carrello = true; // variabile booleana, true se il carrello è out, false se è in
+var ground = true; // variabile true se sono a terra (diventa false appena si superano i 10 metri)
+var vel = 0; // velocità
+var height = 0; // quota
+var flag = true; // flag per impendire che venga chiamato SetInterval(reset_attitude) più volte durante l'esecuzione della funzione
+var flag_int = true; // flag per impendire che venga chiamato SetInterval(set_flap_int) più volte durante l'esecuzione della funzione
+var flag_ext = true; // flag per impendire che venga chiamato SetInterval(set_flap_ext) più volte durante l'esecuzione della funzione
+var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(motion) e SetInterval(manage_velocity) solo una volta
+var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
+var sea = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
+var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
 
-var roll = 0;
-var pitch = 0;
+var roll = 0; // angolo di rollio
+var pitch = 0; // angolo di beccheggio
 
 
 function go_motors() {
@@ -499,23 +499,35 @@ function motion() {
 }
 
 function manage_velocity() {
-    if (motors == 0) {
-        if (vel > 0) vel += model.rotation.z - 0.1;
-    }
+
+    // TODO - Tommi - sistemare manage_velocity (tutta la parte relativa allo stallo)
+
+    /* livelli di velocità:
+        motori 0 -> si scende fino a circa 150 km/h e poi si stalla
+        motori 1 -> velocità di 150 km/h
+        motori 2 -> velocità di 206 km/h
+        motori 3 -> velocità di 263 km/h
+        motori 4 -> velocità di 320 km/h
+        motori 5 -> velocità di 376 km/h
+     */
+
+    if (motors == 0) if (vel > 0) vel += - 0.5; // se i motori sono spenti, decelera di 0.5
     if (vel < 150) {
         if ( model.rotation.z >= 0 && ground && motors > 1) vel += 1.2;
         if (motors != 0 && !ground) vel += 1;
         if (!ground) stall();
     }
-    else if (vel < 206 - model.rotation.z*20 && motors > 1) vel += 0.67;
-    else if (vel < 263 - model.rotation.z*20 && motors > 2) vel += 0.5;
-    else if (vel < 320 - model.rotation.z*20 && motors > 3) vel += 0.5;
-    else if (vel < 376 - model.rotation.z*20 && motors > 4) vel += 0.33;
+    else if (vel < 206 && motors > 1) vel += 0.67; // se la velocità è minore di 206 e i motori sono stettati a 2,3,4 o 5, accelera di 0.67
+    else if (vel < 263 && motors > 2) vel += 0.5; // se la velocità è minore di 263 e i motori sono stettati a 3,4 o 5, accelera di 0.5
+    else if (vel < 320 && motors > 3) vel += 0.5; // se la velocità è minore di 320 e i motori sono stettati a 4 o 5, accelera di 0.5
+    else if (vel < 376 && motors > 4) vel += 0.33; // se la velocità è minore di 376 e i motori sono stettati a 5, accelera di 0.33
 
-    else if (vel > 320 + model.rotation.z*20 && motors < 5) vel -= 0.5;
-    else if (vel > 263 + model.rotation.z*20 && motors < 4) vel -= 0.5;
-    else if (vel > 206 + model.rotation.z*20 && motors < 3) vel -= 0.5;
-    else if (vel > 151 + model.rotation.z*20 && motors < 2) vel -= 0.5;
+        // le accelerazioni sono scalate così da avere accelerazioni maggiori a velocità più basse
+
+    else if (vel > 320 && motors < 5) vel -= 0.5; // decelera se la velocità è maggiore della velocità relativa al livello del motore a cui ci si trova
+    else if (vel > 263 && motors < 4) vel -= 0.5;
+    else if (vel > 206 && motors < 3) vel -= 0.5;
+    else if (vel > 151 && motors < 2) vel -= 0.5;
 
     height = model.position.y*0.1;
 
