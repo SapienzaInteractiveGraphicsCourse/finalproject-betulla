@@ -96,7 +96,7 @@ function init() {
 	loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
 	    model = gltf.scene;
-	    model.position.set(40000,0,35000);
+	    model.position.set(40000,-200,35000);
 	    model.scale.set(0.2, 0.2, 0.2);
 
 	    model.traverse(function (children){
@@ -163,7 +163,7 @@ function init() {
 
     loader.load('Models/terrain/scene.gltf', function(gltf){
         terrain = gltf.scene;
-        terrain.position.set(0,2000,0);
+        terrain.position.set(0,3400,0);
         terrain.scale.set(1000,1000,1000);
         scene.add(terrain);
         terrain.receiveShadow = true;
