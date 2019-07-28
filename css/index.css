@@ -80,7 +80,7 @@ body {
 .modal {
     display: none; 
     position: fixed; /* Stay in place */
-    z-index: 1; /* Sit on top */
+    z-index: 101; /* Sit on top */
     left: 0;
     top: 0;
     width: 100%; 
@@ -95,8 +95,20 @@ body {
     left: 12.5%;
     width: 75%; 
     height: 75%; 
-    overflow-y: scroll; /* Enable scroll if needed */
+    overflow-y: auto; /* Enable scroll if needed */
     animation-name: animatetop;
+    animation-duration: 0.4s
+}
+
+.modal-content2 {
+    background-color: rgba(179,180,1, 0.9);
+    position: absolute;
+    top: 25%;
+    left: 35%;
+    width: 30%; 
+    height: 50%;
+    overflow-y: auto; /* Enable scroll if needed */
+    animation-name: animatetop2;
     animation-duration: 0.4s
 }
 
@@ -105,8 +117,22 @@ body {
   from {top: -300px; opacity: 0}
   to {top: 12.5%; left: 12.5%; opacity: 1}
 }
+@keyframes animatetop2 {
+  from {top: -300px; opacity: 0}
+  to {top: 25%; left: 35%; opacity: 1}
+}
 
 .close {display: none;}
+
+#commands{
+  width:74vh; 
+  height: 74vh;
+  position:absolute;
+  left:50%;
+  top:50%;
+  margin-top:-37vh; /* This needs to be half of the height */
+  margin-left:-37vh;
+}
 
 /** game **/
 .game {
@@ -211,12 +237,54 @@ body {
   display: block;
   position: absolute;
   z-index: 100;
-  left: 1%;
+  left: 5px;
   top: 1%;
 }
 
-#audio {
-  height: 100px;
+#pause_div{
+  display: block;
+  position: absolute;
+  z-index: 100;
+  left: 40px;
+  top: 1%;
+}
+
+#audio, #pause {
+  height: 30px;
+  width: 30px;
+  background-color: rgba(255, 255, 255, 0.4);
+}
+
+#pause_page {
+  display: block;
+  position: absolute;
+  top: 48%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  font-family: Info;
+  font-size: 50px;
+  color: rgb(179, 0, 0);  
+  text-align: center;
+}
+
+#pause_b{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
   width: 100px;
+  margin-top: 10px;
+}
+
+#help_div{
+  display: block;
+  position: absolute;
+  z-index: 100;
+  left: 75px;
+  top: 1%;
+}
+
+#help {
+  height: 30px;
+  width: 80px;
   background-color: rgba(255, 255, 255, 0.4);
 }

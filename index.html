@@ -10,7 +10,7 @@
 
 <body>
 	<audio id="menuMusic_id" autoplay loop>
-  		<source  src="sounds/menu.mp3" >
+  		<source src="sounds/menu.ogg" >
 	</audio>
 
 	<script src="Common/Three.js"></script>
@@ -26,12 +26,12 @@
 
 		<div class="start_b_div" id="start_b_id">
    		  <img id="start_b" src="./images/button_play.png" onclick="start_game()">
-   		  <img id="start_b" src="./images/button_instructions.png" onclick="instructions()">
-   		  <img id="start_b" src="./images/button_commands.png" onclick="commands()">
+   		  <img id="start_b" src="./images/button_instructions.png" onclick='modal("myModal")'>
+   		  <img id="start_b" src="./images/button_commands.png" onclick='modal("myModal_2")'>
    		</div>
 
    		<div id="audio_div">
-   		  <img id="audio" src="images/unmute.png" style="width:30px;height:30px;" onclick="switchImage(1)">
+   		  <img id="audio" src="images/unmute.png" onclick="switchImage()">
    		</div>
 
         <div class="column" id="diff">DIFFICULTY:
@@ -97,12 +97,12 @@
   		    </div>
   		</div>
 
-		<div id="myModal_2" class="modal">
-			<div class="modal-content">
-				<span class="close">&times;</span>
-				<img id="start_b" src="./images/commands.jpg" style="width: 50%;height: 100%;">
-			</div>
-		</div>
+		  <div id="myModal_2" class="modal">
+        <div class="modal-content">
+          <span class="close">&times;</span>
+          <img id="commands" src="./images/commands.jpg">
+        </div>
+      </div>
 
   		<!-- game -->
   		<div class="game" id="game_id">
@@ -111,7 +111,33 @@
   			<div id="velocity"></div>
   			<div id="roll"></div>
   			<div id="pitch"></div>
-			<div id="conversation"></div>
+			  <div id="conversation"></div>
+
+        <div class="pause" id="pause_div">
+          <img id="pause" src="./images/pause.png" onclick='play_pause();modal("myModal_3")'>
+        </div>
+
+        <div id="myModal_3" class="modal">
+          <div class="modal-content2">
+            <span class="close">&times;</span>
+              <div class="pause_div" id="pause_page">PAUSE <br>
+                <img id="pause_b" src="./images/button_continue.png" onclick="getElementById('myModal_3').style.display = 'none';play_pause()">
+                <img id="pause_b" src="./images/button_restart.png" onclick="restart_game()">
+                <img id="pause_b" src="./images/button_menu.png" onclick="load_menu()">
+              </div>
+          </div>
+        </div>
+
+        <div class="help" id="help_div">
+          <img id="help" src="./images/button_commands.png" onclick='play_pause();modal("myModal_4")'>
+        </div>
+
+        <div id="myModal_4" class="modal" >
+          <div class="modal-content">
+            <span class="close">&times;</span>
+            <img id="commands" src="./images/commands.jpg">
+          </div>
+        </div>
   		</div>
 	</div>
 

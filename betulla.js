@@ -1,6 +1,6 @@
 var camera, scene, renderer;
-var time = 0;
-var playFlag = false;
+var playFlag = false; //false=menu/pausa, true=gioco attivo
+var volume=true; //true= volume attivo
 var menu_music= document.getElementById("menuMusic_id");
 
 function start_game() {
@@ -11,8 +11,8 @@ function start_game() {
   setInterval(messages, 1000);
 }
 
-function instructions() {
-    var modal = document.getElementById("myModal");
+function modal(my_modal) {
+    var modal = document.getElementById(my_modal);
 
     var span = document.getElementsByClassName("close")[0];
 
@@ -24,30 +24,15 @@ function instructions() {
 
     window.onclick = function(event) {
         if (event.target == modal) {
+        	if (my_modal=="myModal_3" ||my_modal=="myModal_4") play_pause();
             modal.style.display = "none";
         }
     }
 }
 
-function commands() {
-    var modal = document.getElementById("myModal_2");
-
-    var span = document.getElementsByClassName("close")[0];
-
-    modal.style.display = "block";
-
-    span.onclick = function() {
-        modal.style.display = "none";
-    }
-
-    window.onclick = function(event) {
-        if (event.target == modal) {
-            modal.style.display = "none";
-        }
-    }
-}
-
-var clock, startTime;
+var clock, startTime, pauseClock, pauseTime;
+var pauseInterval=0; //intervallo di tempo passato in pausa
+var canvas, canvas_id;
 var difficulty_html, difficulty;
 var fire_speed;
 const fire_speed_h=30;
@@ -58,6 +43,8 @@ var motor_sound=new initialize_sound("sounds/motors.ogg");
 motor_sound.sound.loop=true;
 var cart_sound =new initialize_sound("sounds/cart.mp3");
 cart_sound.sound.playbackRate=0.8;
+cart_sound.sound.onended=function(){cart_soundFlag=true;};
+cart_soundFlag=false;
 
 var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
 
@@ -80,6 +67,7 @@ function init() {
     }
 
     clock = new THREE.Clock();
+    pauseClock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000000 );
     scene = new THREE.Scene();
 
@@ -227,13 +215,13 @@ function init() {
     window.addEventListener( 'resize', onWindowResize, false );
 
     //show game window
-    document.getElementById('game_id').style.display = 'block';;
+    document.getElementById('game_id').style.display = 'block';
 
     game_scene_div = document.getElementById('game_id');
     game_scene_div.appendChild(renderer.domElement);
 
+    canvas = document.getElementsByTagName("canvas")[0].setAttribute("id", "canvas_id");
     startTime=clock.getElapsedTime();
-
 
 }
 
@@ -244,21 +232,21 @@ function onWindowResize() {
 }
 
 function animate() {
-    if(!playFlag) return;
 
     renderer.render(scene, camera);
 
-    time += 0.01;
-    
-    curTime = clock.getElapsedTime() - startTime -0.5;
-    if (curTime<0) curTime=0.0;
+    if(playFlag) {
+    	
+    	curTime = clock.getElapsedTime() -pauseInterval - startTime -0.5;
+    	if (curTime<0) curTime=0.0;
 
-    document.getElementById('timer').innerHTML = "Timer: " + compute_time(curTime);
-    document.getElementById('height').innerHTML = "Height: " + height.toFixed(0)+" m";
-    document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0)+" km/h";
-    document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
-    document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
-    document.getElementById('conversation').innerHTML = "Camil: " + message;
+    	document.getElementById('timer').innerHTML = "Timer: " + compute_time(curTime);
+    	document.getElementById('height').innerHTML = "Height: " + height.toFixed(0)+" m";
+    	document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0)+" km/h";
+    	document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
+    	document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
+    	document.getElementById('conversation').innerHTML = "Camil: " + message;
+	}
     requestAnimationFrame( animate );
 }
 
@@ -273,6 +261,7 @@ var speed_weels = 0; // velocità delle ruote
 var t = 0; // variabile per interpolazione
 var s = 0; // variabile per interpolazione
 var carrello = true; // variabile booleana, true se il carrello è out, false se è in
+var pressed_c = false; //true se premuto pulsante per chiudere carrello, necessario per restart con carrello out
 var ground = true; // variabile true se sono a terra (diventa false appena si superano i 10 metri)
 var vel = 0; // velocità
 var height = 0; // quota
@@ -289,6 +278,9 @@ var pitch = 0; // angolo di beccheggio
 
 
 function go_motors() {
+
+	if (!playFlag) return; 
+
     elica_sx.rotation.x -= speed_helic;
     elica_dx.rotation.x += speed_helic;
     bulbo_sx.rotation.x -= speed_helic;
@@ -296,6 +288,9 @@ function go_motors() {
 }
 
 function close_doors_ant() {
+
+	if (!pressed_c) return;
+
     var final_pos_carrello_ant_sx = [-7.581658840179443, -3.7419378757476807, 0.19173964858055115];
     var final_pos_carrello_ant_dx = [-7.5800251960754395, -3.73860764503479, -0.18563362956047058];
     var final_ori_carrello_ant_sx = [0.009189425971824428, -0.00554940649972749, 0.0018415058893600554];
@@ -332,6 +327,8 @@ function close_doors_ant() {
 }
 
 function close_doors_back() {
+
+	if (!pressed_c) return;
 
     var final_pos_carrello_pst_sx = [-1.0702261924743652, -3.2571945667266846, 1.3294000625610352];
     var final_ori_carrello_pst_sx = [-0.013760069104879721, 0.0010154504545003445, -0.006800981813350741];
@@ -470,6 +467,8 @@ function set_flap_ext() {
 
 function motion() {
 
+	if (!playFlag) return; 
+
     if (ground) {
         if (flap_timone.rotation.z > 0 && vel > 150) { // up
             model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
@@ -518,6 +517,8 @@ function manage_velocity() {
         motori 4 -> velocità di 320 km/h
         motori 5 -> velocità di 376 km/h
      */
+
+    if (!playFlag) return;
 
     if (motors == 0) if (vel > 0) vel += - 0.5; // se i motori sono spenti, decelera di 0.5
     if (vel < 150) {
@@ -596,6 +597,7 @@ function onDocumentKeyDown(event) {
             //sound off
             motor_sound.sound.pause();
             motor_sound.sound.currentTime = 0;
+            motor_sound.sound.playbackRate=1;
         }
         if (!flag_motors) {
             flag_motors = true;
@@ -726,6 +728,7 @@ function onDocumentKeyDown(event) {
             t = 0;
             s = 0;
             carrello = false;
+            pressed_c= true;
             cart_sound.sound.play();
             setInterval(close_doors_ant, 10);
             setInterval(close_doors_back, 10);
@@ -752,28 +755,16 @@ function initialize_sound(src) {
   document.body.appendChild(this.sound);
 }
 
-function switchImage(id){ //// id 1 = mute/unmute button, 2= pause/play image;
-  if(id ===1) {
-    var abs_path1 = document.getElementById("audio").src;
-    var path1 = abs_path1.substring(abs_path1.lastIndexOf("/"), abs_path1.length);
-    if (path1 === '/unmute.png') {
-      audio_game(0);
-      document.getElementById("audio").src = 'images/mute.png';
-    }
-    else {
-      audio_game(1);
-      document.getElementById("audio").src = 'images/unmute.png';
-    }
+function switchImage(){ ////mute/unmute button
+  if (volume) {
+  	volume=false;
+    audio_game(0);
+    document.getElementById("audio").src = 'images/mute.png';
   }
-  if (id === 2){
-    var abs_path2 = document.getElementById("play_pause").src;
-    var path2 = abs_path2.substring(abs_path2.lastIndexOf("/"), abs_path2.length);
-    if (path2 === '/resume.png') {
-      document.getElementById("play_pause").src = 'img/pause.png';
-    }
-    else {
-      document.getElementById("play_pause").src = 'img/resume.png';
-    }
+  else {
+  	volume=true;
+    audio_game(1);
+    document.getElementById("audio").src = 'images/unmute.png';
   }
 }
 
@@ -795,3 +786,88 @@ function audio_game(val){
   }
 }
 
+function play_pause() {
+	if (!playFlag) {
+
+		playFlag = true;
+
+		menu_music.muted=true;
+		if(motors>0) motor_sound.sound.play();
+		if (!cart_soundFlag && !carrello) cart_sound.sound.play();
+
+		pauseInterval+=pauseClock.getElapsedTime()-pauseTime;
+
+	} else {
+
+		playFlag = false;
+		pauseTime=pauseClock.getElapsedTime();
+
+		motor_sound.sound.pause();
+		cart_sound.sound.pause();
+		if (volume) menu_music.muted=false;
+	}
+}
+
+function restart_game() {
+	if (confirm("Are you sure?")) {
+		document.getElementById("myModal_3").style.display = "none";
+		canvas_id = document.getElementById("canvas_id");
+		canvas_id.remove();
+		reset_var();
+		start_game();
+	} 
+}
+
+function load_menu(){
+	if (confirm("Are you sure?")) {
+		document.getElementById("myModal_3").style.display = "none";
+		canvas_id = document.getElementById("canvas_id");
+		canvas_id.remove();
+		reset_var();
+		menu_music.mute=false;
+		document.getElementById('game_id').style.display = 'none';
+	}
+}
+
+function reset_var(){
+	clearInterval(engine);
+	clearInterval(reset);
+	clearInterval(reset_int);
+	clearInterval(reset_ext);
+
+	clearInterval(motion);
+    clearInterval(manage_velocity);
+    clearInterval(go_motors);
+    clearInterval(reset_attitude);
+    clearInterval(set_flap_int);
+    clearInterval(set_flap_ext);
+    clearInterval(close_doors_ant);
+    clearInterval(close_doors_back);
+
+    pauseInterval=0;
+	playFlag = false;
+	motor_sound.sound.playbackRate=1;
+	cart_soundFlag=false;
+	message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
+	motors = 0;
+	weels = 0;
+	speed_helic = 0;
+	speed_weels = 0;
+	t = 0;
+	s = 0;
+	carrello = true;
+	pressed_c=false;
+	ground = true;
+	vel = 0;
+	height = 0;
+	flag = true;
+	flag_int = true;
+	flag_ext = true;
+	flag_motors = false;
+	tank = false;
+	sea = false;
+	fire = false;
+	canadair=null;
+	roll = 0;
+	pitch = 0;
+}
