@@ -96,8 +96,8 @@ function init() {
 	loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
 	    model = gltf.scene;
-	    model.position.set(0,0,0);
-	    model.scale.set(5, 5, 5);
+	    model.position.set(40000,0,35000);
+	    model.scale.set(0.2, 0.2, 0.2);
 
 	    model.traverse(function (children){
 
@@ -145,6 +145,7 @@ function init() {
 	    });
 	    model.add( camera );
 	    scene.add( model );
+        canadair = model;
 
 	},
 	// called while loading is progressing
@@ -162,9 +163,10 @@ function init() {
 
     loader.load('Models/terrain/scene.gltf', function(gltf){
         terrain = gltf.scene;
-        terrain.position.set(0,0,0);
-        terrain.scale.set(4000,4000,4000);
+        terrain.position.set(0,2000,0);
+        terrain.scale.set(1000,1000,1000);
         scene.add(terrain);
+        terrain.receiveShadow = true;
     },
     function(xhr){
         console.log((xhr.loaded / xhr.total*100) + '% loaded')
@@ -197,23 +199,30 @@ function init() {
     dirLight.position.set(  1, 1.75, -1 );
     scene.add( dirLight );
 
-    var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
-    var loader  = new THREE.TextureLoader();
-    texture = loader.load( "images/sky.jpg" );
-    texture.magFilter = THREE.LinearFilter;
-    texture.minFilter = THREE.LinearFilter;
+    let material_array = [];
+    let texture_ft = new THREE.TextureLoader().load("images/skybox3/front.jpg");
+    let texture_bk = new THREE.TextureLoader().load("images/skybox3/back.jpg");
+    let texture_up = new THREE.TextureLoader().load("images/skybox3/top.jpg");
+    let texture_dn = new THREE.TextureLoader().load("images/skybox3/base.jpg");
+    let texture_rt = new THREE.TextureLoader().load("images/skybox3/right.jpg");
+    let texture_lt = new THREE.TextureLoader().load("images/skybox3/left.jpg");
 
-    const shader = THREE.ShaderLib.equirect;
-    var material = new THREE.ShaderMaterial({
-        fragmentShader: shader.fragmentShader,
-        vertexShader: shader.vertexShader,
-        uniforms: shader.uniforms,
-        depthWrite: false,
-        side: THREE.BackSide,
-    });
-    material.uniforms.tEquirect.value = texture;
-    var sky = new THREE.Mesh(skyGeo, material);
-    scene.add(sky);
+    material_array.push(new THREE.MeshBasicMaterial({map:texture_ft}));
+    material_array.push(new THREE.MeshBasicMaterial({map:texture_bk}));
+    material_array.push(new THREE.MeshBasicMaterial({map:texture_up}));
+    material_array.push(new THREE.MeshBasicMaterial({map:texture_dn}));
+    material_array.push(new THREE.MeshBasicMaterial({map:texture_rt}));
+    material_array.push(new THREE.MeshBasicMaterial({map:texture_lt}));
+
+    for(let i = 0; i < 6; i++)
+        material_array[i].side = THREE.BackSide;
+
+    let skyboxGeo = new THREE.BoxGeometry(80000,80000,80000);
+    let skybox = new THREE.Mesh(skyboxGeo, material_array);
+    scene.add(skybox);
+
+    let controls = new THREE.OrbitControls(camera);
+    controls.addEventListener('change',renderer)
 
     window.addEventListener( 'resize', onWindowResize, false );
 
@@ -250,7 +259,6 @@ function animate() {
     document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
     document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
     document.getElementById('conversation').innerHTML = "Camil: " + message;
-
     requestAnimationFrame( animate );
 }
 
@@ -275,7 +283,7 @@ var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(m
 var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
 var sea = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
 var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
-
+var canadair = null;
 var roll = 0; // angolo di rollio
 var pitch = 0; // angolo di beccheggio
 

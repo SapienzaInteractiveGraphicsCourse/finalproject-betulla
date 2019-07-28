@@ -1,0 +1,45 @@
+newmtl INSIDE
+Kd 0.784314 0.784314 0.784314
+Ke 0 0 0
+Ka 1 1 1
+Ks 0.5 0.5 0.5
+Ns 500
+Tr 0
+d 1
+Ni 1
+Tf 1 1 1
+map_Kd C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel.bmp
+map_Ks C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel_Spec.bmp
+map_bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel_N.bmp
+bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel_N.bmp
+
+newmtl MAIN
+Kd 0.784314 0.784314 0.784314
+Ke 0 0 0
+Ka 1 1 1
+Ks 0.5 0.5 0.5
+Ns 500
+Tr 0
+d 1
+Ni 1
+Tf 1 1 1
+map_Kd C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel.bmp
+map_Ks C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel_Spec.bmp
+map_bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel_N.bmp
+bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel_N.bmp
+
+newmtl METAL_FRAME
+Kd 0.784314 0.784314 0.784314
+Ke 0 0 0
+Ka 1 1 1
+Ks 0.5 0.5 0.5
+Ns 500
+Tr 0
+d 1
+Ni 1
+Tf 1 1 1
+map_Kd C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame.bmp
+map_Ks C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame_Spec.bmp
+map_bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame_N.bmp
+bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame_N.bmp
+
