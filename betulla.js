@@ -19,13 +19,13 @@ function modal(my_modal) {
     modal.style.display = "block";
 
     span.onclick = function() {
-        modal.style.display = "none";
+        if (my_modal!="myModal_5") modal.style.display = "none";
     }
 
     window.onclick = function(event) {
-        if (event.target == modal) {
+        if (event.target == modal && my_modal!="myModal_5") {
         	if (my_modal=="myModal_3" ||my_modal=="myModal_4") play_pause();
-            modal.style.display = "none";
+            	modal.style.display = "none";
         }
     }
 }
@@ -45,6 +45,7 @@ var cart_sound =new initialize_sound("sounds/cart.mp3");
 cart_sound.sound.playbackRate=0.8;
 cart_sound.sound.onended=function(){cart_soundFlag=true;};
 cart_soundFlag=false;
+var gameover_sound= new initialize_sound("sounds/gameover.mp3");
 
 var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
 
@@ -84,7 +85,7 @@ function init() {
 	loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
 	    model = gltf.scene;
-	    model.position.set(40000,-200,35000);
+	    model.position.set(40000, 0, 35000);
 	    model.scale.set(0.2, 0.2, 0.2);
 
 	    model.traverse(function (children){
@@ -133,8 +134,6 @@ function init() {
 	    });
 	    model.add( camera );
 	    scene.add( model );
-        canadair = model;
-
 	},
 	// called while loading is progressing
 	function ( xhr ) {
@@ -206,7 +205,7 @@ function init() {
         material_array[i].side = THREE.BackSide;
 
     let skyboxGeo = new THREE.BoxGeometry(80000,80000,80000);
-    let skybox = new THREE.Mesh(skyboxGeo, material_array);
+    skybox = new THREE.Mesh(skyboxGeo, material_array);
     scene.add(skybox);
 
     let controls = new THREE.OrbitControls(camera);
@@ -246,6 +245,8 @@ function animate() {
     	document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
     	document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
     	document.getElementById('conversation').innerHTML = "Camil: " + message;
+
+    	if (height>=800) game_over_menu();
 	}
     requestAnimationFrame( animate );
 }
@@ -272,7 +273,6 @@ var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(m
 var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
 var sea = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
 var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
-var canadair = null;
 var roll = 0; // angolo di rollio
 var pitch = 0; // angolo di beccheggio
 
@@ -564,7 +564,7 @@ function messages() {
     else if (height == 0 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 200 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
-    else if (height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
+    else if (height > 0 && height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
     else if (sea && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
@@ -808,9 +808,18 @@ function play_pause() {
 	}
 }
 
+function game_over_menu(){ //to call when gameover
+	playFlag = false;
+	motor_sound.sound.pause();
+	cart_sound.sound.pause();
+	modal("myModal_5");
+	if (volume) gameover_sound.sound.play();
+}
+
 function restart_game() {
 	if (confirm("Are you sure?")) {
 		document.getElementById("myModal_3").style.display = "none";
+		document.getElementById("myModal_5").style.display = "none";
 		canvas_id = document.getElementById("canvas_id");
 		canvas_id.remove();
 		reset_var();
@@ -821,10 +830,12 @@ function restart_game() {
 function load_menu(){
 	if (confirm("Are you sure?")) {
 		document.getElementById("myModal_3").style.display = "none";
+		document.getElementById("myModal_5").style.display = "none";
 		canvas_id = document.getElementById("canvas_id");
 		canvas_id.remove();
 		reset_var();
-		menu_music.mute=false;
+		if (volume) menu_music.muted=false;
+		else menu_music.muted=true;
 		document.getElementById('game_id').style.display = 'none';
 	}
 }
@@ -867,7 +878,26 @@ function reset_var(){
 	tank = false;
 	sea = false;
 	fire = false;
-	canadair=null;
 	roll = 0;
 	pitch = 0;
+
+	scene.remove(model);
+	scene.remove(terrain);
+	scene.remove( light );
+	scene.remove( dirLight );
+	scene.remove(skybox);
+	model.dispose();
+	terrain.dispose();
+	skybox.geometry.dispose();
+
+	scene.dispose();
+    scene = null;
+    camera = null;
+    renderer && renderer.renderLists.dispose();
+    renderer = null;
+    loader = null;
+    clock = null;
+    pauseClock = null;
+    light = null;
+    dirLight = null;
 }

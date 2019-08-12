@@ -112,6 +112,18 @@ body {
     animation-duration: 0.4s
 }
 
+.modal-content3 {
+    background-color: rgba(179,180,1, 0.9);
+    position: absolute;
+    top: 20%;
+    left: 30%;
+    width: 35%; 
+    height: 60%;
+    overflow-y: auto; /* Enable scroll if needed */
+    animation-name: animatetop3;
+    animation-duration: 0.4s
+}
+
 /* Animation */
 @keyframes animatetop {
   from {top: -300px; opacity: 0}
@@ -120,6 +132,10 @@ body {
 @keyframes animatetop2 {
   from {top: -300px; opacity: 0}
   to {top: 25%; left: 35%; opacity: 1}
+}
+@keyframes animatetop3 {
+  from {top: -300px; opacity: 0}
+  to {top: 20%; left: 30%; opacity: 1}
 }
 
 .close {display: none;}
