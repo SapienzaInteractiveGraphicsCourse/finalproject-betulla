@@ -186,27 +186,23 @@ function init() {
     dirLight.position.set(  1, 1.75, -1 );
     scene.add( dirLight );
 
-    let material_array = [];
-    let texture_ft = new THREE.TextureLoader().load("images/skybox3/front.jpg");
-    let texture_bk = new THREE.TextureLoader().load("images/skybox3/back.jpg");
-    let texture_up = new THREE.TextureLoader().load("images/skybox3/top.jpg");
-    let texture_dn = new THREE.TextureLoader().load("images/skybox3/base.jpg");
-    let texture_rt = new THREE.TextureLoader().load("images/skybox3/right.jpg");
-    let texture_lt = new THREE.TextureLoader().load("images/skybox3/left.jpg");
+    var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
+    var loader  = new THREE.TextureLoader();
+    texture = loader.load( "images/sky.jpg" );
+    texture.magFilter = THREE.LinearFilter;
+    texture.minFilter = THREE.LinearFilter;
 
-    material_array.push(new THREE.MeshBasicMaterial({map:texture_ft}));
-    material_array.push(new THREE.MeshBasicMaterial({map:texture_bk}));
-    material_array.push(new THREE.MeshBasicMaterial({map:texture_up}));
-    material_array.push(new THREE.MeshBasicMaterial({map:texture_dn}));
-    material_array.push(new THREE.MeshBasicMaterial({map:texture_rt}));
-    material_array.push(new THREE.MeshBasicMaterial({map:texture_lt}));
-
-    for(let i = 0; i < 6; i++)
-        material_array[i].side = THREE.BackSide;
-
-    let skyboxGeo = new THREE.BoxGeometry(80000,80000,80000);
-    skybox = new THREE.Mesh(skyboxGeo, material_array);
-    scene.add(skybox);
+    const shader = THREE.ShaderLib.equirect;
+    var skyMaterial = new THREE.ShaderMaterial({
+        fragmentShader: shader.fragmentShader,
+        vertexShader: shader.vertexShader,
+        uniforms: shader.uniforms,
+        depthWrite: false,
+        side: THREE.BackSide,
+    });
+    skyMaterial.uniforms.tEquirect.value = texture;
+    sky = new THREE.Mesh(skyGeo, skyMaterial);
+    scene.add(sky);
 
     window.addEventListener( 'resize', onWindowResize, false );
 
@@ -882,10 +878,11 @@ function reset_var(){
 	scene.remove(terrain);
 	scene.remove( light );
 	scene.remove( dirLight );
-	scene.remove(skybox);
+	scene.remove(sky);
 	model.dispose();
 	terrain.dispose();
-	skybox.geometry.dispose();
+	sky.geometry.dispose();
+	sky.material.dispose();
 
 	scene.dispose();
     scene = null;
