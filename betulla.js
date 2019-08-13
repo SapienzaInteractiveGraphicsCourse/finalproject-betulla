@@ -208,9 +208,6 @@ function init() {
     skybox = new THREE.Mesh(skyboxGeo, material_array);
     scene.add(skybox);
 
-    let controls = new THREE.OrbitControls(camera);
-    controls.addEventListener('change',renderer)
-
     window.addEventListener( 'resize', onWindowResize, false );
 
     //show game window
