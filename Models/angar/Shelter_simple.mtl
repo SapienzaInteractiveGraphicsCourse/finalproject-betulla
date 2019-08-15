@@ -8,10 +8,10 @@ Tr 0
 d 1
 Ni 1
 Tf 1 1 1
-map_Kd C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel.bmp
-map_Ks C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel_Spec.bmp
-map_bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel_N.bmp
-bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_whitepanel_N.bmp
+map_Kd Shelter_simple_whitepanel.jpg
+map_Ks Shelter_simple_whitepanel_Spec.jpg
+map_bump Shelter_simple_whitepanel_N.jpg
+bump Shelter_simple_whitepanel_N.jpg
 
 newmtl MAIN
 Kd 0.784314 0.784314 0.784314
@@ -23,10 +23,10 @@ Tr 0
 d 1
 Ni 1
 Tf 1 1 1
-map_Kd C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel.bmp
-map_Ks C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel_Spec.bmp
-map_bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel_N.bmp
-bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_greenpanel_N.bmp
+map_Kd Shelter_simple_greenpanel.jpg
+map_Ks Shelter_simple_greenpanel_Spec.jpg
+map_bump Shelter_simple_greenpanel_N.jpg
+bump Shelter_simple_greenpanel_N.jpg
 
 newmtl METAL_FRAME
 Kd 0.784314 0.784314 0.784314
@@ -38,8 +38,8 @@ Tr 0
 d 1
 Ni 1
 Tf 1 1 1
-map_Kd C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame.bmp
-map_Ks C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame_Spec.bmp
-map_bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame_N.bmp
-bump C:Games/EECH MODS/PUBLISHER/CGTRADER/SHED/READY/shelter free/Shelter_simple_frame_N.bmp
+map_Kd Shelter_simple_frame.jpg
+map_Ks Shelter_simple_frame_Spec.jpg
+map_bump Shelter_simple_frame_N.jpg
+bump Shelter_simple_frame_N.jpg
 
