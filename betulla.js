@@ -30,6 +30,9 @@ function modal(my_modal) {
     }
 }
 
+var texLoader = new THREE.TextureLoader();
+var GLTFloader = new THREE.GLTFLoader();
+
 var clock, startTime, pauseClock, pauseTime;
 var pauseInterval=0; //intervallo di tempo passato in pausa
 var canvas, canvas_id;
@@ -78,15 +81,17 @@ function init() {
     renderer = new THREE.WebGLRenderer( { antialias: true } );
     renderer.setPixelRatio( window.devicePixelRatio );
     renderer.setSize( window.innerWidth, window.innerHeight );
+    renderer.shadowMap.enabled = true;
+    renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     //Load canadair
-	var loader = new THREE.GLTFLoader();
 
-	loader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
+
+	GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
 	    model = gltf.scene;
-	    model.position.set(40000, 0, 35000);
-	    model.scale.set(0.2, 0.2, 0.2);
+	    model.position.set(0, 2, 9);
+	    model.scale.set(1, 1, 1);
 
 	    model.traverse(function (children){
 
@@ -148,19 +153,160 @@ function init() {
 
 	});
 
-    loader.load('Models/terrain/scene.gltf', function(gltf){
-        terrain = gltf.scene;
-        terrain.position.set(0,3400,0);
-        terrain.scale.set(1000,1000,1000);
-        scene.add(terrain);
-        terrain.receiveShadow = true;
+    //load the world
+    var geometryPlane = new THREE.PlaneGeometry( 100000, 100000);
+    var terrainTexture = texLoader.load( "images/tough_grass.jpg" );
+    var terrainMaterial = new THREE.MeshBasicMaterial( { map: terrainTexture, side: THREE.DoubleSide} );
+    //terrainMaterial.magFilter = THREE.LinearFilter;
+    //terrainMaterial.minFilter = THREE.LinearFilter;
+    terrainMaterial.wrapS = THREE.RepeatWrapping; 
+    terrainMaterial.wrapT = THREE.RepeatWrapping;
+    //terrainMaterial.repeat.set( 4, 4 ); 
+    var materialPlane = new THREE.MeshBasicMaterial( {color: 0x003300, side: THREE.DoubleSide} );
+    var terrain = new THREE.Mesh( geometryPlane, terrainMaterial );
+    terrain.position.y = 0;
+    terrain.rotation.x = Math.PI/2;
+    scene.add( terrain );
+
+    //load grass and tree
+    GLTFloader.load('Models/grass/scene.gltf', function ( gltf ) {
+        grass = gltf.scene;
+        grass.position.set(-20, 6, 0);
+        grass.scale.set(0.01, 0.01, 0.01);
+        scene.add( grass );
     },
-    function(xhr){
-        console.log((xhr.loaded / xhr.total*100) + '% loaded')
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
     },
-    function(error){
-        console.log("An error happened")
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
     });
+
+    //load airport
+    var streets = [];
+    GLTFloader.load('Models/sidewalk/scene.gltf', function ( gltf ) {
+        street = gltf.scene;
+        for(var i = 0; i < 15; i++){
+            streets[i] = street.clone();
+            streets[i].position.set(-i*55, 0, 0);
+            streets[i].rotation.y = Math.PI/2;
+            scene.add( streets[i] );
+        }
+        for(var i = 15; i < 30; i++){
+            streets[i] = street.clone();
+            streets[i].position.set(-(i-15)*55, 0, 18);
+            streets[i].rotation.y = -Math.PI/2;
+            scene.add( streets[i] );
+        }
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
+
+    GLTFloader.load('Models/radio_tower/scene.gltf', function ( gltf ) {
+        tower = gltf.scene;
+        tower.position.set(-600, 0, -60);
+        tower.scale.set(0.3, 0.3, 0.3);
+        scene.add( tower );
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
+
+    GLTFloader.load('Models/abandoned_building/scene.gltf', function ( gltf ) {
+        building = gltf.scene;
+        building.position.set(-150, 0, -60);
+        building.scale.set(0.05, 0.05, 0.05);
+        scene.add( building );
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
+
+
+    GLTFloader.load('Models/hangar/scene.gltf', function ( gltf ) {
+        hangar = gltf.scene;
+        hangar.position.set(-100, 0, 60);
+        hangar.scale.set(3, 3, 3);
+        //hanger.rotation.y = Math.PI/2;
+        scene.add( hangar );
+
+        hangar1 = hangar.clone();
+        hangar1.position.set(-150, 0, 60);
+        hangar1.scale.set(3, 3, 3);
+        scene.add(hangar1);
+
+        hangar2 = hangar.clone();
+        hangar2.position.set(-200, 0, 60);
+        hangar2.scale.set(3, 3, 3);
+        scene.add(hangar2);
+
+        hangar3 = hangar.clone();
+        hangar3.position.set(-50, 0, 60);
+        hangar3.scale.set(3, 3, 3);
+        scene.add(hangar3);
+
+        hangar4 = hangar.clone();
+        hangar4.position.set(-250, 0, 60);
+        hangar4.scale.set(3, 3, 3);
+        scene.add(hangar4);
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
+
+    var mtlLoader = new THREE.MTLLoader();
+    mtlLoader.load("Models/angar/Shelter_simple.mtl", function(materials){
+        materials.preload();
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.load("Models/angar/Shelter_simple.obj", function(mesh){
+
+            mesh.traverse(function(node){
+                if( node instanceof THREE.Mesh ){
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+            mesh.position.set(-60,2,-60);
+            mesh.scale.set(1, 1, 1);
+            scene.add(mesh);
+
+            mesh1 = mesh.clone()
+            mesh1.position.set(0, 2, -60);
+            mesh1.scale.set(1, 1, 1);
+            scene.add(mesh1);
+
+            mesh2 = mesh.clone()
+            mesh2.position.set(-300, 2, 60);
+            mesh2.scale.set(1, 1, 1);
+            scene.add(mesh2);
+
+        });
+    });
+
 
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
     light.position.set( 0, 200, 0 );
@@ -181,14 +327,30 @@ function init() {
     // LIGHTS
     dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
     dirLight.position.set( - 1, -1.75, 1 );
+    dirLight.penumbra = 0.5;
+    dirLight.decay = 1.3;
+    dirLight.distance = 200;
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 550;
+    dirLight.shadow.mapSize.height = 550;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 500
     scene.add( dirLight );
+
     dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
     dirLight.position.set(  1, 1.75, -1 );
+    dirLight.penumbra = 0.5;
+    dirLight.decay = 1.3;
+    dirLight.distance = 200;
+    dirLight.castShadow = true;
+    dirLight.shadow.mapSize.width = 550;
+    dirLight.shadow.mapSize.height = 550;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 500
     scene.add( dirLight );
 
     var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
-    var loader  = new THREE.TextureLoader();
-    texture = loader.load( "images/sky.jpg" );
+    texture = texLoader.load( "images/sky.jpg" );
     texture.magFilter = THREE.LinearFilter;
     texture.minFilter = THREE.LinearFilter;
 
@@ -889,7 +1051,6 @@ function reset_var(){
     camera = null;
     renderer && renderer.renderLists.dispose();
     renderer = null;
-    loader = null;
     clock = null;
     pauseClock = null;
     light = null;
