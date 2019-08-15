@@ -3,6 +3,9 @@ var playFlag = false; //false=menu/pausa, true=gioco attivo
 var volume=true; //true= volume attivo
 var menu_music= document.getElementById("menuMusic_id");
 
+var waterPosition;
+var firePosition;
+
 function start_game() {
   menu_music.muted = true;
   init();
@@ -90,7 +93,21 @@ function init() {
 	GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
 	    model = gltf.scene;
-	    model.position.set(0, 2, 9);
+        canadair2 = model.clone();
+        canadair3 = model.clone();
+
+        canadair2.position.set(-300, 5, -60);
+        canadair2.scale.set(1, 1, 1);
+        canadair2.rotation.y = Math.PI *  0.5;
+        scene.add(canadair2);
+
+        canadair3.position.set(-5, 5, 50);
+        canadair3.scale.set(1, 1, 1);
+        canadair3.rotation.y = -Math.PI *0.5;
+        scene.add(canadair3);
+
+
+	    model.position.set(10, 5, 9);
 	    model.scale.set(1, 1, 1);
 
 	    model.traverse(function (children){
@@ -154,6 +171,8 @@ function init() {
 	});
 
     //load the world
+
+    /*
     var geometryPlane = new THREE.PlaneGeometry( 100000, 100000);
     var terrainTexture = texLoader.load( "images/tough_grass.jpg" );
     var terrainMaterial = new THREE.MeshBasicMaterial( { map: terrainTexture, side: THREE.DoubleSide} );
@@ -167,13 +186,53 @@ function init() {
     terrain.position.y = 0;
     terrain.rotation.x = Math.PI/2;
     scene.add( terrain );
+    */
+
+    // ground
+    var groundGeometry = new THREE.PlaneBufferGeometry( 100000, 100000 );
+    var groundMaterial = new THREE.MeshStandardMaterial( { roughness: 1, metalness: 1 } );
+    var ground = new THREE.Mesh( groundGeometry, groundMaterial );
+    ground.rotation.x = Math.PI * - 0.5;
+    scene.add( ground );
+    texLoader.load( "images/grass_grass_0107_01.jpg", function ( map ) {
+        map.wrapS = THREE.RepeatWrapping;
+        map.wrapT = THREE.RepeatWrapping;
+        map.anisotropy = 16;
+        map.repeat.set( 5000, 5000 );
+        groundMaterial.map = map;
+        groundMaterial.needsUpdate = true;
+    } );
 
     //load grass and tree
-    GLTFloader.load('Models/grass/scene.gltf', function ( gltf ) {
+    var grassLine = [];
+    var grassLine2 = [];
+    GLTFloader.load('Models/yet_another_grass_model/scene.gltf', function ( gltf ) {
         grass = gltf.scene;
-        grass.position.set(-20, 6, 0);
-        grass.scale.set(0.01, 0.01, 0.01);
-        scene.add( grass );
+        grass.scale.set(0.05, 0.05, 0.05);
+        grass.position.set(-20, 0, 60);
+
+        for(var i = 0; i < 20; i++){
+            grassLine[i] = grass.clone();
+            grassLine[i].position.set(-i*70, 0, 60);
+            scene.add( grassLine[i] );
+        }
+        for(var j = 0; j < 20; j++){
+            grassLine2[j] = grass.clone();
+            grassLine2[j].position.set(-j*70, 0, 130);
+            scene.add( grassLine2[j] );
+        }
+        for(var j = 20; j < 40; j++){
+            grassLine2[j] = grass.clone();
+            grassLine2[j].position.set(-(j-20)*70, 0, -110);
+            scene.add( grassLine2[j] );
+        }
+        for(var i = 20; i < 40; i++){
+            grassLine[i] = grass.clone();
+            grassLine[i].position.set(-(i-20)*70, 0, -40);
+            scene.add( grassLine[i] );
+        }
+
+        //scene.add( grass );
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -213,7 +272,7 @@ function init() {
     GLTFloader.load('Models/radio_tower/scene.gltf', function ( gltf ) {
         tower = gltf.scene;
         tower.position.set(-600, 0, -60);
-        tower.scale.set(0.3, 0.3, 0.3);
+        tower.scale.set(0.2, 0.2, 0.2);
         scene.add( tower );
     },
     // called while loading is progressing
@@ -290,17 +349,17 @@ function init() {
                     node.receiveShadow = true;
                 }
             });
-            mesh.position.set(-60,2,-60);
+            mesh.position.set(-60, -5, -60);
             mesh.scale.set(1, 1, 1);
             scene.add(mesh);
 
             mesh1 = mesh.clone()
-            mesh1.position.set(0, 2, -60);
+            mesh1.position.set(0, -5, -60);
             mesh1.scale.set(1, 1, 1);
             scene.add(mesh1);
 
             mesh2 = mesh.clone()
-            mesh2.position.set(-300, 2, 60);
+            mesh2.position.set(-300, -5, 60);
             mesh2.scale.set(1, 1, 1);
             scene.add(mesh2);
 
