@@ -211,24 +211,24 @@ function init() {
         grass.scale.set(0.05, 0.05, 0.05);
         grass.position.set(-20, 0, 60);
 
-        for(var i = 0; i < 20; i++){
+        for(var i = 0; i < 12; i++){
             grassLine[i] = grass.clone();
             grassLine[i].position.set(-i*70, 0, 60);
             scene.add( grassLine[i] );
         }
-        for(var j = 0; j < 20; j++){
+        for(var j = 5; j < 12; j++){
             grassLine2[j] = grass.clone();
             grassLine2[j].position.set(-j*70, 0, 130);
             scene.add( grassLine2[j] );
         }
-        for(var j = 20; j < 40; j++){
+        for(var j = 12; j < 19; j++){
             grassLine2[j] = grass.clone();
-            grassLine2[j].position.set(-(j-20)*70, 0, -110);
+            grassLine2[j].position.set(-(j-10)*70, 0, -110);
             scene.add( grassLine2[j] );
         }
-        for(var i = 20; i < 40; i++){
+        for(var i = 12; i < 24; i++){
             grassLine[i] = grass.clone();
-            grassLine[i].position.set(-(i-20)*70, 0, -40);
+            grassLine[i].position.set(-(i-12)*70, 0, -40);
             scene.add( grassLine[i] );
         }
 
@@ -365,6 +365,24 @@ function init() {
 
         });
     });
+/*
+    //load the forest
+    GLTFloader.load('Models/alberi_1/scene.gltf', function ( gltf ) {
+        tree = gltf.scene;
+        tree.position.set(-600, 0, 0);
+        tree.scale.set(0.3, 0.3, 0.3);
+        //hanger.rotation.y = Math.PI/2;
+        scene.add( tree );
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
+*/
 
 
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
