@@ -37,7 +37,7 @@ function modal(my_modal) {
 var texLoader = new THREE.TextureLoader();
 var GLTFloader = new THREE.GLTFLoader();
 
-var clock, startTime, pauseClock, pauseTime;
+var clock, startTime, pauseClock, pauseTime, waterClock;
 var pauseInterval=0; //intervallo di tempo passato in pausa
 var canvas, canvas_id;
 var difficulty_html, difficulty;
@@ -76,6 +76,7 @@ function init() {
 
     clock = new THREE.Clock();
     pauseClock = new THREE.Clock();
+    waterClock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000000 );
     scene = new THREE.Scene();
 
@@ -107,8 +108,7 @@ function init() {
         canadair3.rotation.y = -Math.PI *0.5;
         scene.add(canadair3);
 
-
-	    model.position.set(10, 5, 9);
+	    model.position.set(10, 4, 9);
 	    model.scale.set(1, 1, 1);
 
 	    model.traverse(function (children){
@@ -156,8 +156,9 @@ function init() {
 
 	    });
 	    model.add( camera );
-            var worldAxis = new THREE.AxesHelper(20);
-            model.add(worldAxis);
+        var worldAxis = new THREE.AxesHelper(20);
+        model.add(worldAxis);
+	    model.add( particleSys );
 	    scene.add( model );
 	},
 	// called while loading is progressing
@@ -174,22 +175,6 @@ function init() {
 	});
 
     //load the world
-
-    /*
-    var geometryPlane = new THREE.PlaneGeometry( 100000, 100000);
-    var terrainTexture = texLoader.load( "images/tough_grass.jpg" );
-    var terrainMaterial = new THREE.MeshBasicMaterial( { map: terrainTexture, side: THREE.DoubleSide} );
-    //terrainMaterial.magFilter = THREE.LinearFilter;
-    //terrainMaterial.minFilter = THREE.LinearFilter;
-    terrainMaterial.wrapS = THREE.RepeatWrapping; 
-    terrainMaterial.wrapT = THREE.RepeatWrapping;
-    //terrainMaterial.repeat.set( 4, 4 ); 
-    var materialPlane = new THREE.MeshBasicMaterial( {color: 0x003300, side: THREE.DoubleSide} );
-    var terrain = new THREE.Mesh( geometryPlane, terrainMaterial );
-    terrain.position.y = 0;
-    terrain.rotation.x = Math.PI/2;
-    scene.add( terrain );
-    */
 
     // ground
     var groundGeometry = new THREE.PlaneBufferGeometry( 100000, 100000 );
@@ -387,24 +372,14 @@ function init() {
     });
 */
 
+    //create water particles
+    defineParticles (); 
 
+    // LIGHTS
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
     light.position.set( 0, 200, 0 );
     scene.add( light );
-    /*light = new THREE.DirectionalLight( 0xffffff );
-    light.position.set( 0, 200, 100 );
-    light.castShadow = true;
-    light.shadow.camera.top = 180;
-    light.shadow.camera.bottom = - 100;
-    light.shadow.camera.left = - 120;
-    light.shadow.camera.right = 120;
-    scene.add( light );*/
 
-    /*var light = new THREE.PointLight( 0xffffff, 20, 100 );
-    light.position.set( 50, 50, 50 );
-    scene.add( light );*/
-
-    // LIGHTS
     dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
     dirLight.position.set( - 1, -1.75, 1 );
     dirLight.penumbra = 0.5;
@@ -482,6 +457,16 @@ function animate() {
     	document.getElementById('conversation').innerHTML = "Camil: " + message;
 
     	if (height>=800) game_over_menu();
+
+        if (emptyingTank==true){
+            done=particleMgr();
+            if (done){
+                waterClock.stop();
+                emptyingTank=false;
+                pressed_bar =false;
+                particleSys.visible = false;
+            }
+        }
 	}
     requestAnimationFrame( animate );
 }
@@ -498,6 +483,7 @@ var t = 0; // variabile per interpolazione
 var s = 0; // variabile per interpolazione
 var carrello = true; // variabile booleana, true se il carrello è out, false se è in
 var pressed_c = false; //true se premuto pulsante per chiudere carrello, necessario per restart con carrello out
+var pressed_bar = false; //true se premuto pulsante per svuotare serbatoio, necessario per messaggio di errore
 var ground = true; // variabile true se sono a terra (diventa false appena si superano i 10 metri)
 var vel = 0; // velocità
 var height = 0; // quota
@@ -505,10 +491,10 @@ var flag = true; // flag per impendire che venga chiamato SetInterval(reset_atti
 var flag_int = true; // flag per impendire che venga chiamato SetInterval(set_flap_int) più volte durante l'esecuzione della funzione
 var flag_ext = true; // flag per impendire che venga chiamato SetInterval(set_flap_ext) più volte durante l'esecuzione della funzione
 var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(motion) e SetInterval(manage_velocity) solo una volta
-var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
-var sea = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
+var tank = true //TODO ELE rimettere a false appena introdotto lago: false; // variabile true se il serbatoio è pieno, false altrimenti
+var lake = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
 var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
-var water = false; // variabile true se sto scaricando l'acqua, false altrimenti
+var emptyingTank=false; //true se si sta svuotando serbatoio
 var roll = 0; // angolo di rollio
 var pitch = 0; // angolo di beccheggio
 
@@ -714,14 +700,14 @@ function motion() {
         if (flap_timone.rotation.z > 0 && vel > 150) { // up
             model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
         }
-        else if (height < 5){
+        else if (height < 4){
             ruote_ant.rotation.z += speed_weels;
             ruote_pst_sx.rotation.z += speed_weels;
             ruote_pst_dx.rotation.z += speed_weels;
         }
-        if (height > 5) ground = false;
+        if (height > 4) ground = false;
     }
-    else if (!water) {
+    else if (!emptyingTank) {
 
         if (flap_timone.rotation.z > 0) { // up
             model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
@@ -801,17 +787,23 @@ function stall() {
 }
 
 function messages() {
-    if (height < 5 && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
-    else if (height < 5 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
+
+    exclamation= [ "Perfect!", "Well done!", "Good job!"]
+
+    if (height < 4 && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
+    else if (height < 4 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
-    else if (height > 5 && height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
+    else if (height > 4 && height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
-    else if (sea && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
-    else if (!tank) message = "Ok, now go to the sea to fill the tank!";
+    else if (lake && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
+    else if (!tank) message = "Ok, now go to the lake to fill the tank!";
     else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
+    else if (pressed_bar && !emptyingTank) message= "You can't empty the tank while you're turning! Re-try with roll angle between -20° and 20° and a pitch between -40° and 80°"
     else if (tank) message = "Come on, get to the fire and empty the tank!";
+    else if (emptyingTank && fire) message= exclamation[Math.floor(Math.random()*textArray.length)];
+    else if (emptyingTank && !fire) message= "You need to empty the tank on the fire!"
 
 }
 
@@ -989,6 +981,19 @@ function onDocumentKeyDown(event) {
             reset_ext = setInterval(set_flap_ext, 10);
         }
     }
+
+    else if (keyCode == 32) { //space bar
+        if (tank) {
+            pressed_bar= true;
+            let r=roll.toFixed(0);
+            let p =pitch.toFixed(0);
+            if (r >-20 && r<20 && p>-40 && p<80){
+                waterClock.start();
+                tank=false;
+                emptyingTank=true;
+            }
+        }
+    }
 };
 
 //implement timer
@@ -1011,16 +1016,16 @@ function initialize_sound(src) {
 }
 
 function switchImage(){ ////mute/unmute button
-  if (volume) {
-  	volume=false;
-    audio_game(0);
-    document.getElementById("audio").src = 'images/mute.png';
-  }
-  else {
-  	volume=true;
-    audio_game(1);
-    document.getElementById("audio").src = 'images/unmute.png';
-  }
+	if (volume) {
+		volume=false;
+	    audio_game(0);
+	    document.getElementById("audio").src = 'images/mute.png';	
+  	}
+  	else {
+    	volume=true;
+    	audio_game(1);
+    	document.getElementById("audio").src = 'images/unmute.png';
+  	}
 }
 
 //control audio volume
@@ -1078,6 +1083,11 @@ function restart_game() {
 		canvas_id = document.getElementById("canvas_id");
 		canvas_id.remove();
 		reset_var();
+		/*VARIABILI DA RINIZIALIZZARE SOLO PER RESTART*/
+		scene = null;
+		camera = null;
+		renderer = null;
+		/*********************/
 		start_game();
 	} 
 }
@@ -1123,6 +1133,7 @@ function reset_var(){
 	s = 0;
 	carrello = true;
 	pressed_c=false;
+	pressed_bar=false;
 	ground = true;
 	vel = 0;
 	height = 0;
@@ -1130,29 +1141,168 @@ function reset_var(){
 	flag_int = true;
 	flag_ext = true;
 	flag_motors = false;
-	tank = false;
-	sea = false;
+	tank = true //TODO ELE rimettere a false appena introdotto lago;
+	lake = false;
 	fire = false;
+	emptyingTank=false;
 	roll = 0;
 	pitch = 0;
 
 	scene.remove(model);
-	scene.remove(terrain);
 	scene.remove( light );
 	scene.remove( dirLight );
 	scene.remove(sky);
 	model.dispose();
-	terrain.dispose();
 	sky.geometry.dispose();
 	sky.material.dispose();
 
 	scene.dispose();
-    scene = null;
-    camera = null;
     renderer && renderer.renderLists.dispose();
-    renderer = null;
     clock = null;
     pauseClock = null;
     light = null;
     dirLight = null;
+}
+
+//PARTICELLE STUFF
+const gAccel = -9.81
+const particleCount = 6096; /* Falling particles.*/
+
+var globlPart = /* Falling particles coordinate proprieties.  */
+{
+    pXVar: 0,
+    pXMean: 0,
+
+    pYVar: -350,
+    pYMean: -0.5,
+
+    pZVar: -20,
+    pZMean: 10,
+
+    initVel: 0.5,
+    visible: false
+};
+
+var particles = []; /* Falling particles.  */
+var particleSys;
+var time = []; /* Clock for main waterfall particles.  */
+var pGeometry;
+
+function defineParticles ()
+{
+    pGeometry = new THREE.Geometry();
+
+    var particleTex = THREE.ImageUtils.loadTexture ("images/drop2.png");
+    particleTex.wrapS = particleTex.wrapT = THREE.RepeatWrapping;
+    particleTex.repeat.set (1, 1);
+    
+    pMaterial = new THREE.PointCloudMaterial
+    ({
+        color: 0x3399ff, /* Blue-like colour.  */
+        map: particleTex, /* Texture.  */
+        size: 0.3,
+        sizeAttenuation: true,
+        fog: true,
+        transparent: true, /* Alpha channel = 0; propriety inherited
+                      from Material.  */
+    });
+
+    /* Creates falling particles.  */
+    for (p = 0; p < particleCount; p++){
+        /* Initial position and velocity added to pGeometry.  */
+        particles[p] =
+        {
+            position: new THREE.Vector3 (
+                  (Math.random() * globlPart.pXVar) +
+                  globlPart.pXMean,
+                  (Math.random() * globlPart.pYVar) +
+                  globlPart.pYMean,
+                  (Math.random() * globlPart.pZVar) +
+                  globlPart.pZMean),
+            velocity: new THREE.Vector3 (
+                   (Math.random() * globlPart.initVel) +
+                   globlPart.initVel,
+                   globlPart.initVel,
+                   0),
+        };
+        
+        pGeometry.vertices.push (particles[p].position);
+
+        /* Start the particle clock.  */
+        time[p] = new THREE.Clock ();
+        time[p].start ();
+    }
+
+    particleSys = new THREE.PointCloud (pGeometry ,pMaterial);
+    particleSys.sortParticles = true;
+    particleSys.visible = false; /* Inherited from Object3D.  */
+}
+
+/* Particle manager function, called by renderer.  */
+function particleMgr ()
+{
+    var count=0;
+    /* Get the number of particles.  */
+    var pCount =particleCount;
+    while (pCount--){ /* Loop all particles. */
+        /* Get the current particle.  */
+        var particle = particles[pCount];
+        /* Calculate elapsed time and use modulus operator to
+           solve animation problems.  */
+        var elapsed = (time[pCount].getElapsedTime ()) % 20;
+
+        /* Check if we need to reset particle position.  */
+        if (particle.position.y < -50) /* - height */
+        {
+            if (waterClock.getElapsedTime()>3){
+                particle.position.y = -500;
+                if (pCount == 1) pGeometry.verticesNeedUpdate = true;
+                count+=1;
+                continue;
+            }
+            /* Check if the particles can be made visible.  */
+            if (particleSys.visible == false && pCount == 1)
+                particleSys.visible = true;
+
+            /* Particle clock reset.  */
+            time[pCount] = new THREE.Clock ();
+            time[pCount].start ();
+
+            /* Assign random positions for x and z (in a fixed 
+               range), but not for y which has fixed values.  */
+            particle.position.x = (Math.random()
+                           * globlPart.pXVar)
+                          + globlPart.pXMean;
+            particle.velocity.x = (Math.random()
+                           * globlPart.initVel)
+                          + globlPart.initVel;
+
+            particle.position.y = (Math.random() * globlPart.pYVar) +
+                  globlPart.pYMean;
+            particle.velocity.y = globlPart.initVel;
+
+            particle.position.z = (Math.random()
+                           * globlPart.pZVar)
+                          + globlPart.pZMean;
+            particle.velocity.z = 0;
+
+        }
+        else
+        {
+            /* vy = g * t (where t is the leapsed time.)  */
+            particle.velocity.y = gAccel * elapsed;
+            /* y = 1/2 * g * t^2 (uniform acceleration.)  */
+            particle.position.y += (1/2) * particle.velocity.y
+                           * elapsed;
+
+            /* vx = v0 (where x corresponds to z.)  */
+            particle.velocity.x += 0;
+            /* x = v0 * t  */
+            particle.position.x += particle.velocity.x * elapsed;
+        }
+        /* Reassign particle to main particles array  */
+        particles[pCount] = particle;
+        if (pCount == 1) pGeometry.verticesNeedUpdate = true;
+    }
+    if (count==particleCount) return true;
 }
