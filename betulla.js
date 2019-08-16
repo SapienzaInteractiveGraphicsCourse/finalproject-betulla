@@ -6,6 +6,7 @@ var menu_music= document.getElementById("menuMusic_id");
 var waterPosition;
 var firePosition;
 
+
 function start_game() {
   menu_music.muted = true;
   init();
@@ -155,6 +156,8 @@ function init() {
 
 	    });
 	    model.add( camera );
+            var worldAxis = new THREE.AxesHelper(20);
+            model.add(worldAxis);
 	    scene.add( model );
 	},
 	// called while loading is progressing
@@ -505,6 +508,7 @@ var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(m
 var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
 var sea = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
 var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
+var water = false; // variabile true se sto scaricando l'acqua, false altrimenti
 var roll = 0; // angolo di rollio
 var pitch = 0; // angolo di beccheggio
 
@@ -658,7 +662,7 @@ function close_doors_back() {
 
 function reset_attitude() {
 
-    if (timone.rotation.y < 0) timone.rotation.y += Math.PI/600;
+    /*if (timone.rotation.y < 0) timone.rotation.y += Math.PI/600;
     else timone.rotation.y -= Math.PI/600;
     if (flap_timone.rotation.z > 0) flap_timone.rotation.z -= Math.PI/600;
     else flap_timone.rotation.z += Math.PI/600;
@@ -675,7 +679,12 @@ function reset_attitude() {
     else model.rotateX(-Math.PI/100*model.rotation.x);
 
     if (model.rotation.z > 0) model.rotateZ(-Math.PI/100*model.rotation.z);
-    else model.rotateZ(-Math.PI/100*model.rotation.z);
+    else model.rotateZ(-Math.PI/100*model.rotation.z);*/
+
+    set_flap_int();
+    set_flap_ext();
+    model.rotation.x = 0;
+    model.rotation.z = 0;
 
 }
 
@@ -705,20 +714,20 @@ function motion() {
         if (flap_timone.rotation.z > 0 && vel > 150) { // up
             model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
         }
-        else if (height == 0){
+        else if (height < 5){
             ruote_ant.rotation.z += speed_weels;
             ruote_pst_sx.rotation.z += speed_weels;
             ruote_pst_dx.rotation.z += speed_weels;
         }
-        if (height > 10) ground = false;
+        if (height > 5) ground = false;
     }
-    else {
+    else if (!water) {
 
         if (flap_timone.rotation.z > 0) { // up
-            model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
+            model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
         }
         else {
-            model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
+            model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
         }
 
         if (flap_int_dx.rotation.z < 0) { // destra
@@ -733,7 +742,7 @@ function motion() {
     model.translateX(-vel*0.01);
     camera.lookAt(model.position);
 
-    roll = -model.rotation.x*180/Math.PI;
+    roll = -model.rotation.x*180/Math.PI*;
     pitch = -model.rotation.z*180/Math.PI;
 }
 
@@ -792,11 +801,11 @@ function stall() {
 }
 
 function messages() {
-    if (height == 0 && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
-    else if (height == 0 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 200 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
+    if (height < 5 && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
+    else if (height < 5 && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
-    else if (height > 0 && height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
+    else if (height > 5 && height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
     else if (sea && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
@@ -810,7 +819,7 @@ document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
 
-    //console.log(keyCode);
+    console.log(keyCode);
 
     if(!playFlag) return;
 
@@ -837,7 +846,7 @@ function onDocumentKeyDown(event) {
             setInterval(manage_velocity, 40);
         }
     }
-    else if (keyCode == 66) { // w
+    else if (keyCode == 66) { // b
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -855,7 +864,7 @@ function onDocumentKeyDown(event) {
         }
 
     }
-    else if (keyCode == 78) { // s
+    else if (keyCode == 78) { // n
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -906,7 +915,7 @@ function onDocumentKeyDown(event) {
             timone.rotation.y += Math.PI/600;
         }
     }
-    else if (keyCode == 87) { // up-38
+    else if (keyCode == 87) { // w
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -920,7 +929,7 @@ function onDocumentKeyDown(event) {
         }
     }
 
-    else if (keyCode == 83) { // down-40
+    else if (keyCode == 83) { // s
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -956,7 +965,7 @@ function onDocumentKeyDown(event) {
     }
 
     else if (keyCode == 67) { // c
-        if (carrello && height>0) {
+        if (carrello && height>10) {
             t = 0;
             s = 0;
             carrello = false;
@@ -964,6 +973,20 @@ function onDocumentKeyDown(event) {
             cart_sound.sound.play();
             setInterval(close_doors_ant, 10);
             setInterval(close_doors_back, 10);
+        }
+    }
+
+    else if (keyCode == 88) { // x
+        if (!flag_ext) {
+            flag_ext = true;
+            reset_ext = setInterval(set_flap_ext, 10);
+        }
+    }
+
+    else if (keyCode == 90) { // z
+        if (!flag_ext) {
+            flag_ext = true;
+            reset_ext = setInterval(set_flap_ext, 10);
         }
     }
 };
