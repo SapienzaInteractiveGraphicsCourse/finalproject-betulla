@@ -742,7 +742,7 @@ function motion() {
     model.translateX(-vel*0.01);
     camera.lookAt(model.position);
 
-    roll = -model.rotation.x*180/Math.PI*;
+    roll = -model.rotation.x*180/Math.PI;
     pitch = -model.rotation.z*180/Math.PI;
 }
 
