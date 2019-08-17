@@ -461,7 +461,7 @@ function animate() {
     	document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
     	document.getElementById('conversation').innerHTML = "Camil: " + message;
 
-    	if (height>=800) game_over_menu();
+    	if (height>=800|| !ground && height<4 && vel>0) game_over_menu();
 
         if (emptyingTank==true){
             done=particleMgr();
@@ -996,6 +996,7 @@ function onDocumentKeyDown(event) {
                 waterClock.start();
                 tank=false;
                 emptyingTank=true;
+                emptying_bar();
             }
         }
     }
@@ -1153,7 +1154,8 @@ function reset_var(){
 	particles = [];
 	time = [];
 
-	scene.remove(model);
+	model.position.set(10, 4, 9);
+    scene.remove(model);
 	model.dispose();
 }
 
@@ -1266,8 +1268,8 @@ var globlPart = /* Falling particles coordinate proprieties.  */
     pYVar: -350,
     pYMean: -0.5,
 
-    pZVar: -20,
-    pZMean: 10,
+    pZVar: -3,
+    pZMean: 1.5,
 
     initVel: 0.5,
     visible: false
@@ -1313,9 +1315,10 @@ function defineParticles ()
                    (Math.random() * globlPart.initVel) +
                    globlPart.initVel,
                    globlPart.initVel,
-                   0),
+                   (Math.random() * globlPart.initVel) +
+                   globlPart.initVel),
         };
-        
+        if (particles[p].position.z<0) particles[p].velocity.z *=-1;
         pGeometry.vertices.push (particles[p].position);
 
         /* Start the particle clock.  */
@@ -1374,7 +1377,9 @@ function particleMgr ()
             particle.position.z = (Math.random()
                            * globlPart.pZVar)
                           + globlPart.pZMean;
-            particle.velocity.z = 0;
+            particle.velocity.z = (Math.random() * globlPart.initVel) +
+                   globlPart.initVel;
+            if (particle.position.z<0) particle.velocity.z *=-1;
 
         }
         else
@@ -1389,10 +1394,24 @@ function particleMgr ()
             particle.velocity.x += 0;
             /* x = v0 * t  */
             particle.position.x += particle.velocity.x * elapsed;
+
+            if (particle.velocity.z>=0) particle.velocity.z += 0.2 * elapsed; 
+            else particle.velocity.z -= 0.2 * elapsed;
+
+            particle.position.z += particle.velocity.z * elapsed;
         }
         /* Reassign particle to main particles array  */
         particles[pCount] = particle;
         if (pCount == 1) pGeometry.verticesNeedUpdate = true;
     }
     if (count==particleCount) return true;
+}
+
+function emptying_bar(){
+   var elem = document.getElementById("tankBar");
+   elem.style.transition = "width 3.5s linear 0s";
+   elem.style.WebkitTransition ="width 3.5s linear 0s";
+   elem.style.OTransition="width 3.5s linear 0s";
+   elem.style.MozTransition="width 3.5s linear 0s";
+   elem.style.width = "0%";
 }
