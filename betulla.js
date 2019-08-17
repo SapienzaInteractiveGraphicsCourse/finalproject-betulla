@@ -2,6 +2,7 @@ var camera, scene, renderer;
 var playFlag = false; //false=menu/pausa, true=gioco attivo
 var volume=true; //true= volume attivo
 var menu_music= document.getElementById("menuMusic_id");
+var first_time=true;
 
 var waterPosition;
 var firePosition;
@@ -9,7 +10,11 @@ var firePosition;
 
 function start_game() {
   menu_music.muted = true;
-  init();
+  if (first_time) {
+  	init();
+  	first_time=false;
+  }
+  else partial_init();
   playFlag = true;
   animate();
   setInterval(messages, 1000);
@@ -811,7 +816,7 @@ document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
     var keyCode = event.which;
 
-    console.log(keyCode);
+    //console.log(keyCode);
 
     if(!playFlag) return;
 
@@ -1083,11 +1088,7 @@ function restart_game() {
 		canvas_id = document.getElementById("canvas_id");
 		canvas_id.remove();
 		reset_var();
-		/*VARIABILI DA RINIZIALIZZARE SOLO PER RESTART*/
-		scene = null;
-		camera = null;
-		renderer = null;
-		/*********************/
+
 		start_game();
 	} 
 }
@@ -1099,6 +1100,7 @@ function load_menu(){
 		canvas_id = document.getElementById("canvas_id");
 		canvas_id.remove();
 		reset_var();
+
 		if (volume) menu_music.muted=false;
 		else menu_music.muted=true;
 		document.getElementById('game_id').style.display = 'none';
@@ -1141,27 +1143,115 @@ function reset_var(){
 	flag_int = true;
 	flag_ext = true;
 	flag_motors = false;
-	tank = true //TODO ELE rimettere a false appena introdotto lago;
+	tank = true; //TODO ELE rimettere a false appena introdotto lago
 	lake = false;
 	fire = false;
 	emptyingTank=false;
 	roll = 0;
 	pitch = 0;
 
-	scene.remove(model);
-	scene.remove( light );
-	scene.remove( dirLight );
-	scene.remove(sky);
-	model.dispose();
-	sky.geometry.dispose();
-	sky.material.dispose();
+	particles = [];
+	time = [];
 
-	scene.dispose();
-    renderer && renderer.renderLists.dispose();
-    clock = null;
-    pauseClock = null;
-    light = null;
-    dirLight = null;
+	scene.remove(model);
+	model.dispose();
+}
+
+function partial_init(){
+	difficulty_html = document.getElementById("lista_diff");
+    difficulty = difficulty_html.options[difficulty_html.selectedIndex].text;
+
+    if(difficulty === "Hard"){
+        fire_speed = fire_speed_h;
+    }
+    if(difficulty === "Normal"){
+        fire_speed = fire_speed_m;
+    }
+    if(difficulty === "Easy"){
+        fire_speed = fire_speed_e;
+    }
+    if(difficulty === "Beginner"){
+        fire_speed = fire_speed_b;
+    }
+    
+    GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
+
+	    model = gltf.scene;
+	    model.position.set(10, 4, 9);
+	    model.scale.set(1, 1, 1);
+
+	    model.traverse(function (children){
+
+	        if (children.name == "heliceG") elica_sx = children;
+	        if (children.name == "heliceD") elica_dx = children;
+
+	        if (children.name == "voletG") flap_int_sx = children;
+	        if (children.name == "voletD") flap_int_dx = children;
+
+	        if (children.name == "aileronG") flap_ext_sx = children;
+	        if (children.name == "aileronD") flap_ext_dx = children;
+
+	        if (children.name == "profondeur") flap_timone = children;
+	        if (children.name == "direction") timone = children;
+
+	        if (children.name == "bolG") bulbo_sx = children;
+	        if (children.name == "bolD") bulbo_dx = children;
+
+	        if (children.name == "porteG") carrello_ant_sx = children;
+	        if (children.name == "porteD") carrello_ant_dx = children;
+
+	        if (children.name == "trappeG") carrello_pst_sx = children;
+	        if (children.name == "trappeD") carrello_pst_dx = children;
+
+	        if (children.name == "roueA") ruote_ant = children;
+	        if (children.name == "roueG") ruote_pst_sx = children;
+	        if (children.name == "roueD") ruote_pst_dx = children;
+
+	        if (children.name == "axeA") asse_ant = children;
+
+	        if (children.name == "axeG1") sospensione_1_sx = children;
+	        if (children.name == "axeG2") sospensione_2_sx = children;
+	        if (children.name == "axeG3") sospensione_3_sx = children;
+	        if (children.name == "axeG4") sospensione_4_sx = children;
+	        if (children.name == "axeD1") sospensione_1_dx = children;
+	        if (children.name == "axeD2") sospensione_2_dx = children;
+	        if (children.name == "axeD3") sospensione_3_dx = children;
+	        if (children.name == "axeD4") sospensione_4_dx = children;
+
+	        if (children.name == "parapG1") supp_carrello_basso_sx = children;
+	        if (children.name == "parapG2") supp_carrello_alto_sx = children;
+	        if (children.name == "parapD1") supp_carrello_basso_dx = children;
+	        if (children.name == "parapD2") supp_carrello_alto_dx = children;
+
+	    });
+	    model.add( camera );
+        var worldAxis = new THREE.AxesHelper(20);
+        model.add(worldAxis);
+	    model.add( particleSys );
+	    scene.add( model );
+	},function ( xhr ) {
+
+		console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+
+	},
+	// called when loading has errors
+	function ( error ) {
+
+		console.log( 'An error happened' );
+
+	});
+
+    //create water particles
+    defineParticles(); 
+
+    //show game window
+    document.getElementById('game_id').style.display = 'block';
+
+    game_scene_div = document.getElementById('game_id');
+    game_scene_div.appendChild(renderer.domElement);
+
+    startTime=clock.getElapsedTime();
+
 }
 
 //PARTICELLE STUFF
