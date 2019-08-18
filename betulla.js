@@ -7,48 +7,23 @@ var first_time=true;
 var waterPosition = [10000, -10000];
 var waterRadius = 1000;
 var firePosition;
-var renderRadius = 8000;
-
+var renderRadius = 2000;
+var oggettiCaricati = 0;
 var trees = [];
+var aereoporto = [];
 
-function posizione_sopra_aereoporto(posX, posY) {
-    if(posY < 100 && posY > -100 && posX > -1000 && posX < 100)
-        return true;
-    return false;
-}
-
-function posizione_sopra_acqua(posX, posY){
-    if( (posX - waterPosition[0]) * (posX - waterPosition[0]) + 
-        (posY - waterPosition[1]) * (posY - waterPosition[1]) <= waterRadius * waterRadius)
-        return true;
-    return false;
-}
-
-function render_trees(posX, posY){
-    minX = posX - renderRadius;
-    maxX = posX + renderRadius;
-    minY = posY - renderRadius;
-    maxY = posY + renderRadius;
-    for(var i = 0; i < 700; i++){
-        do{
-            posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
-            posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
-        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
-        trees[i].position.set(posizioneX, 0, posizioneY);
-        scene.add(trees[i]);
-    }
-}
+var aereoportRenderizzato = true;
 
 function start_game() {
-  menu_music.muted = true;
-  if (first_time) {
-  	init();
-  	first_time=false;
-  }
-  else partial_init();
-  playFlag = true;
-  animate();
-  setInterval(messages, 1000);
+    menu_music.muted = true;
+    if (first_time) {
+        init();
+      	first_time=false;
+    }
+    else partial_init();
+    playFlag = true;
+    animate();
+    setInterval(messages, 1000);
 }
 
 function modal(my_modal) {
@@ -134,6 +109,8 @@ function init() {
         canadair2 = model.clone();
         canadair3 = model.clone();
 
+        oggettiCaricati = oggettiCaricati + 1;
+
         canadair2.position.set(-300, 5, -60);
         canadair2.scale.set(1, 1, 1);
         canadair2.rotation.y = Math.PI *  0.5;
@@ -147,7 +124,10 @@ function init() {
 	    model.position.set(10, 4, 9);
 	    model.scale.set(1, 1, 1);
 
-	    model.traverse(function (children){
+        aereoporto.push(canadair2);
+        aereoporto.push(canadair3);
+	    
+        model.traverse(function (children){
 
 	        if (children.name == "heliceG") elica_sx = children;
 	        if (children.name == "heliceD") elica_dx = children;
@@ -226,7 +206,7 @@ function init() {
         groundMaterial.map = map;
         groundMaterial.needsUpdate = true;
     } );
-
+    oggettiCaricati = oggettiCaricati + 1;
     //load grass 
     var grassLine = [];
     var grassLine2 = [];
@@ -234,7 +214,6 @@ function init() {
         grass = gltf.scene;
         grass.scale.set(0.05, 0.05, 0.05);
         grass.position.set(-20, 0, 60);
-
         for(var i = 0; i < 12; i++){
             grassLine[i] = grass.clone();
             grassLine[i].position.set(-i*70, 0, 60);
@@ -255,7 +234,7 @@ function init() {
             grassLine[i].position.set(-(i-12)*70, 0, -40);
             scene.add( grassLine[i] );
         }
-
+        oggettiCaricati = oggettiCaricati + 1;
         //scene.add( grass );
     },
     // called while loading is progressing
@@ -268,21 +247,23 @@ function init() {
     });
 
     //load airport
-    var streets = [];
     GLTFloader.load('Models/sidewalk/scene.gltf', function ( gltf ) {
         street = gltf.scene;
         for(var i = 0; i < 15; i++){
-            streets[i] = street.clone();
-            streets[i].position.set(-i*55, 0, 0);
-            streets[i].rotation.y = Math.PI/2;
-            scene.add( streets[i] );
+            street = street.clone();
+            street.position.set(-i*55, 0, 0);
+            street.rotation.y = Math.PI/2;
+            scene.add( street );
+            aereoporto.push(street);
         }
         for(var i = 15; i < 30; i++){
-            streets[i] = street.clone();
-            streets[i].position.set(-(i-15)*55, 0, 18);
-            streets[i].rotation.y = -Math.PI/2;
-            scene.add( streets[i] );
+            street = street.clone();
+            street.position.set(-(i-15)*55, 0, 18);
+            street.rotation.y = -Math.PI/2;
+            scene.add( street );
+            aereoporto.push(street);
         }
+        oggettiCaricati = oggettiCaricati + 1;
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -298,6 +279,8 @@ function init() {
         tower.position.set(-600, 0, -60);
         tower.scale.set(0.2, 0.2, 0.2);
         scene.add( tower );
+        oggettiCaricati = oggettiCaricati + 1;
+        aereoporto.push(tower);
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -334,6 +317,12 @@ function init() {
         hangar4.position.set(-250, 0, 60);
         hangar4.scale.set(3, 3, 3);
         scene.add(hangar4);
+        oggettiCaricati = oggettiCaricati + 1;
+        aereoporto.push(hangar);
+        aereoporto.push(hangar1);
+        aereoporto.push(hangar2);
+        aereoporto.push(hangar3);
+        aereoporto.push(hangar4);
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -370,7 +359,11 @@ function init() {
             mesh2.position.set(-300, -5, 60);
             mesh2.scale.set(1, 1, 1);
             scene.add(mesh2);
-
+            oggettiCaricati = oggettiCaricati + 1;
+            aereoporto.push(mesh);
+            aereoporto.push(mesh1);
+            aereoporto.push(mesh2);
+            setInterval(render_airport, 2000);
         });
     });
     //load trees models
@@ -391,29 +384,10 @@ function init() {
                 tree = tree.clone();
                 trees.push(tree);
             }
+            oggettiCaricati = oggettiCaricati + 1;
         });
     });
-/*
-    mtlLoader.load("Models/trees/tree/tree.mtl", function(materials){
-        materials.preload();
-        var objLoader = new THREE.OBJLoader();
-        objLoader.setMaterials(materials);
-        objLoader.load("Models/trees/tree/tree.obj", function(tree){
 
-            tree.traverse(function(node){
-                if( node instanceof THREE.Mesh ){
-                    node.castShadow = true;
-                    node.receiveShadow = true;
-                }
-            });
-            tree.scale.set(0.01, 0.01, 0.01);
-            for(var i = 0; i < 100; i++){
-                tree = tree.clone();
-                trees.push(tree);
-            }
-        });
-    });
-*/
     GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
         tree = gltf.scene;
         tree.scale.set(0.1, 0.1, 0.1);
@@ -421,6 +395,7 @@ function init() {
                 tree = tree.clone();
                 trees.push(tree);
         }
+        oggettiCaricati = oggettiCaricati + 1;
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -438,25 +413,9 @@ function init() {
                 tree = tree.clone();
                 trees.push(tree);
         }
-    },
-    // called while loading is progressing
-    function ( xhr ) {
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    },
-    // called when loading has errors
-    function ( error ) {
-        console.log( 'An error happened' );
-    });
-
-    GLTFloader.load('Models/trees/realistic_tree_model/scene.gltf', function ( gltf ) {
-        tree = gltf.scene;
-        tree.scale.set(2, 2, 2);
-        for(var i = 0; i < 150; i++){
-                tree = tree.clone();
-                trees.push(tree);
-        }
-        //add the forest
+        oggettiCaricati = oggettiCaricati + 1;
         render_trees(0, 0);
+        setInterval(update_trees,1000);
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -526,7 +485,6 @@ function init() {
 
     canvas = document.getElementsByTagName("canvas")[0].setAttribute("id", "canvas_id");
     startTime=clock.getElapsedTime();
-
 }
 
 function onWindowResize() {
@@ -1508,4 +1466,73 @@ function emptying_bar(){
    elem.style.OTransition="width 3.5s linear 0s";
    elem.style.MozTransition="width 3.5s linear 0s";
    elem.style.width = "0%";
+}
+
+function posizione_sopra_aereoporto(posX, posY) {
+    if(posY < 100 && posY > -100 && posX > -1000 && posX < 100)
+        return true;
+    return false;
+}
+
+function posizione_sopra_acqua(posX, posY){
+    if( (posX - waterPosition[0]) * (posX - waterPosition[0]) + 
+        (posY - waterPosition[1]) * (posY - waterPosition[1]) <= waterRadius * waterRadius)
+        return true;
+    return false;
+}
+
+function render_trees(posX, posY){
+    var minX = posX - renderRadius;
+    var maxX = posX + renderRadius;
+    var minY = posY - renderRadius;
+    var maxY = posY + renderRadius;
+    for(var i = 0; i < trees.length; i++){
+        do{
+            var posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            var posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
+        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
+        trees[i].position.set(posizioneX, 0, posizioneY);
+        scene.add(trees[i]);
+    }
+}
+
+function update_trees(){
+    if (!playFlag) return;
+    if(oggettiCaricati != 10) return;
+
+    var posizioneAereoX = model.position.x;
+    var posizioneAereoY = model.position.z;
+    var minX = posizioneAereoX - renderRadius;
+    var maxX = posizioneAereoX + renderRadius;
+    var minY = posizioneAereoY - renderRadius;
+    var maxY = posizioneAereoY + renderRadius;
+    var posizioneX = 0;
+    var posizioneY = 0;
+
+    for(var i = 0; i < trees.length; i++){
+        if(trees[i].position.x < maxX && trees[i].position.x > minX && 
+            trees[i].position.z < maxY && trees[i].position.z > minY){
+            continue;
+        }
+        do{
+            posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
+        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
+        trees[i].position.set(posizioneX, 0, posizioneY);
+        scene.add(trees[i]);
+    }
+}
+
+function render_airport(){
+    if (!playFlag) return;
+    var posAereoX = model.position.x;
+    var posAereoY = model.position.z;
+    if(posAereoX*posAereoX + posAereoY*posAereoY < renderRadius*renderRadius && !aereoporto){
+        for(var i = 0; i < aereoporto.length; i++)
+            scene.add(aereoporto[i]);
+    }
+    else if(posAereoX*posAereoX + posAereoY*posAereoY > (renderRadius*2)*(renderRadius*2) && aereoporto){
+        for(var i = 0; i < aereoporto.length; i++)
+            scene.remove(aereoporto[i]);
+    }
 }
