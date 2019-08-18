@@ -4,9 +4,40 @@ var volume=true; //true= volume attivo
 var menu_music= document.getElementById("menuMusic_id");
 var first_time=true;
 
-var waterPosition;
+var waterPosition = [10000, -10000];
+var waterRadius = 1000;
 var firePosition;
+var renderRadius = 8000;
 
+var trees = [];
+
+function posizione_sopra_aereoporto(posX, posY) {
+    if(posY < 100 && posY > -100 && posX > -1000 && posX < 100)
+        return true;
+    return false;
+}
+
+function posizione_sopra_acqua(posX, posY){
+    if( (posX - waterPosition[0]) * (posX - waterPosition[0]) + 
+        (posY - waterPosition[1]) * (posY - waterPosition[1]) <= waterRadius * waterRadius)
+        return true;
+    return false;
+}
+
+function render_trees(posX, posY){
+    minX = posX - renderRadius;
+    maxX = posX + renderRadius;
+    minY = posY - renderRadius;
+    maxY = posY + renderRadius;
+    for(var i = 0; i < 700; i++){
+        do{
+            posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
+            posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
+        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
+        trees[i].position.set(posizioneX, 0, posizioneY);
+        scene.add(trees[i]);
+    }
+}
 
 function start_game() {
   menu_music.muted = true;
@@ -82,7 +113,7 @@ function init() {
     clock = new THREE.Clock();
     pauseClock = new THREE.Clock();
     waterClock = new THREE.Clock();
-    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 1000000 );
+    camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 180000 );
     scene = new THREE.Scene();
 
     camera.position.set( 20, 8, 0 );
@@ -182,7 +213,7 @@ function init() {
     //load the world
 
     // ground
-    var groundGeometry = new THREE.PlaneBufferGeometry( 100000, 100000 );
+    var groundGeometry = new THREE.PlaneBufferGeometry( 50000, 50000 );
     var groundMaterial = new THREE.MeshStandardMaterial( { roughness: 1, metalness: 1 } );
     var ground = new THREE.Mesh( groundGeometry, groundMaterial );
     ground.rotation.x = Math.PI * - 0.5;
@@ -191,12 +222,12 @@ function init() {
         map.wrapS = THREE.RepeatWrapping;
         map.wrapT = THREE.RepeatWrapping;
         map.anisotropy = 16;
-        map.repeat.set( 5000, 5000 );
+        map.repeat.set( 500, 500 );
         groundMaterial.map = map;
         groundMaterial.needsUpdate = true;
     } );
 
-    //load grass and tree
+    //load grass 
     var grassLine = [];
     var grassLine2 = [];
     GLTFloader.load('Models/yet_another_grass_model/scene.gltf', function ( gltf ) {
@@ -277,22 +308,6 @@ function init() {
         console.log( 'An error happened' );
     });
 
-    GLTFloader.load('Models/abandoned_building/scene.gltf', function ( gltf ) {
-        building = gltf.scene;
-        building.position.set(-150, 0, -60);
-        building.scale.set(0.05, 0.05, 0.05);
-        scene.add( building );
-    },
-    // called while loading is progressing
-    function ( xhr ) {
-        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-    },
-    // called when loading has errors
-    function ( error ) {
-        console.log( 'An error happened' );
-    });
-
-
     GLTFloader.load('Models/hangar/scene.gltf', function ( gltf ) {
         hangar = gltf.scene;
         hangar.position.set(-100, 0, 60);
@@ -358,14 +373,54 @@ function init() {
 
         });
     });
+    //load trees models
+    mtlLoader.load("Models/trees/tree1/tree1.mtl", function(materials){
+        materials.preload();
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.load("Models/trees/tree1/tree1.obj", function(tree){
+
+            tree.traverse(function(node){
+                if( node instanceof THREE.Mesh ){
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+            tree.scale.set(10, 10, 10);
+            for(var i = 0; i < 200; i++){
+                tree = tree.clone();
+                trees.push(tree);
+            }
+        });
+    });
 /*
-    //load the forest
-    GLTFloader.load('Models/alberi_1/scene.gltf', function ( gltf ) {
+    mtlLoader.load("Models/trees/tree/tree.mtl", function(materials){
+        materials.preload();
+        var objLoader = new THREE.OBJLoader();
+        objLoader.setMaterials(materials);
+        objLoader.load("Models/trees/tree/tree.obj", function(tree){
+
+            tree.traverse(function(node){
+                if( node instanceof THREE.Mesh ){
+                    node.castShadow = true;
+                    node.receiveShadow = true;
+                }
+            });
+            tree.scale.set(0.01, 0.01, 0.01);
+            for(var i = 0; i < 100; i++){
+                tree = tree.clone();
+                trees.push(tree);
+            }
+        });
+    });
+*/
+    GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
         tree = gltf.scene;
-        tree.position.set(-600, 0, 0);
-        tree.scale.set(0.3, 0.3, 0.3);
-        //hanger.rotation.y = Math.PI/2;
-        scene.add( tree );
+        tree.scale.set(0.1, 0.1, 0.1);
+        for(var i = 0; i < 200; i++){
+                tree = tree.clone();
+                trees.push(tree);
+        }
     },
     // called while loading is progressing
     function ( xhr ) {
@@ -375,14 +430,49 @@ function init() {
     function ( error ) {
         console.log( 'An error happened' );
     });
-*/
+
+    GLTFloader.load('Models/trees/fur_tree/scene.gltf', function ( gltf ) {
+        tree = gltf.scene;
+        tree.scale.set(0.2, 0.2, 0.2);
+        for(var i = 0; i < 150; i++){
+                tree = tree.clone();
+                trees.push(tree);
+        }
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
+
+    GLTFloader.load('Models/trees/realistic_tree_model/scene.gltf', function ( gltf ) {
+        tree = gltf.scene;
+        tree.scale.set(2, 2, 2);
+        for(var i = 0; i < 150; i++){
+                tree = tree.clone();
+                trees.push(tree);
+        }
+        //add the forest
+        render_trees(0, 0);
+    },
+    // called while loading is progressing
+    function ( xhr ) {
+        console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+    },
+    // called when loading has errors
+    function ( error ) {
+        console.log( 'An error happened' );
+    });
 
     //create water particles
     defineParticles (); 
 
     // LIGHTS
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-    light.position.set( 0, 200, 0 );
+    light.position.set( 0, 1000000, 0 );
     scene.add( light );
 
     dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
@@ -1139,6 +1229,8 @@ function reset_var(){
 	pressed_bar=false;
 	ground = true;
 	vel = 0;
+        texLoader = null;
+        GLTFloader = null;
 	height = 0;
 	flag = true;
 	flag_int = true;
@@ -1155,8 +1247,10 @@ function reset_var(){
 	time = [];
 
 	model.position.set(10, 4, 9);
-    scene.remove(model);
+        scene.remove(model);
 	model.dispose();
+        texLoader = new THREE.TextureLoader();
+        GLTFloader = new THREE.GLTFLoader();
 }
 
 function partial_init(){
