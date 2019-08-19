@@ -54,6 +54,14 @@ body {
   width: 10vw;
 }
 
+#buttonL{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 11vw;
+  opacity: 0.5;
+}
+
 .column {
   text-align: center;
   font-family: Title;

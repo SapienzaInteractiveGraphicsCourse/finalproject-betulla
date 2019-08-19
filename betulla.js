@@ -52,6 +52,7 @@ var clock, startTime, pauseClock, pauseTime, waterClock;
 var pauseInterval=0; //intervallo di tempo passato in pausa
 var canvas, canvas_id;
 var difficulty_html, difficulty;
+var light_mode=false;
 var fire_speed;
 const fire_speed_h=30;
 const fire_speed_m=20;
@@ -1141,6 +1142,22 @@ function audio_game(val){
     motor_sound.sound.volume=1;
     cart_sound.sound.volume=1;
   }
+}
+
+function activate_light_mode(){
+    elem= document.getElementById("buttonL");
+    elem.style.transition = "opacity 0.5s linear 0s";
+    elem.style.WebkitTransition ="opacity 0.5s linear 0s";
+    elem.style.OTransition="opacity 0.5s linear 0s";
+    elem.style.MozTransition="opacity 0.5s linear 0s";
+    if (light_mode) {
+        light_mode=false;
+        elem.style.opacity = 0.5; 
+    }
+    else {
+        light_mode=true;
+        elem.style.opacity = 1;   
+    } 
 }
 
 function play_pause() {
