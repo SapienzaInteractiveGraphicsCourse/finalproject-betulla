@@ -4,8 +4,8 @@ var volume=true; //true= volume attivo
 var menu_music= document.getElementById("menuMusic_id");
 var first_time=true;
 
-var waterPosition = [10000, -10000];
-var waterRadius = 1000;
+var waterPosition = [-15000, 6000];
+var waterRadius = 12500;
 var firePosition;
 var fireRadius;
 
@@ -54,6 +54,7 @@ var clock, startTime, pauseClock, pauseTime, waterClock;
 var pauseInterval=0; //intervallo di tempo passato in pausa
 var canvas, canvas_id;
 var difficulty_html, difficulty;
+var light_mode=false;
 var fire_speed;
 const fire_speed_h=30;
 const fire_speed_m=20;
@@ -91,7 +92,11 @@ function init() {
     pauseClock = new THREE.Clock();
     waterClock = new THREE.Clock();
     camera = new THREE.PerspectiveCamera( 70, window.innerWidth / window.innerHeight, 1, 180000 );
+    
     scene = new THREE.Scene();
+    fogColor = new THREE.Color(0xFFE5F9FF);
+    scene.background = fogColor;
+    scene.fog = new THREE.Fog(fogColor, renderRadius, 10001);
 
     camera.position.set( 20, 8, 0 );
     camera.lookAt( scene.position );
@@ -209,6 +214,16 @@ function init() {
         groundMaterial.needsUpdate = true;
     } );
     oggettiCaricati = oggettiCaricati + 1;
+
+    // lake
+    var lakeGeometry = new THREE.CircleGeometry( waterRadius, 64 );
+    var lakeMaterial = new THREE.MeshStandardMaterial( { shiness: 80, metalness: 1, color: 0x3794cf } );
+    var lake = new THREE.Mesh( lakeGeometry, lakeMaterial );
+    lake.rotation.x = Math.PI * - 0.5;
+    lake.position.set(waterPosition[0], 2, waterPosition[1]);
+    scene.add( lake );
+    oggettiCaricati = oggettiCaricati + 1
+
     //load grass 
     var grassLine = [];
     var grassLine2 = [];
@@ -559,13 +574,23 @@ function animate() {
     	if (curTime<0) curTime=0.0;
 
     	document.getElementById('timer').innerHTML = "Timer: " + compute_time(curTime);
-    	document.getElementById('height').innerHTML = "Height: " + height.toFixed(0)+" m";
+    	document.getElementById('height').innerHTML = "Height: " + ((height-2.8).toFixed(0)>0? (height-2.8).toFixed(0):0)+" m";
     	document.getElementById('velocity').innerHTML = "Velocity: " + vel.toFixed(0)+" km/h";
     	document.getElementById('roll').innerHTML = "Roll angle: " + roll.toFixed(0) + "°";
     	document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
     	document.getElementById('conversation').innerHTML = "Camil: " + message;
 
-    	if (height>=800|| !ground && height<4 && vel>0) game_over_menu();
+        if (!ground){
+            let r=roll.toFixed(0);
+            let p =pitch.toFixed(0);
+            if (posizione_sopra_acqua(model.position.x, model.position.z) && height<4 && 
+                r >-5 && r<5 && p>-12 && p<12 && !going_up) {
+                onLake=true;
+                flap_timone.rotation.z=0;
+            }
+        }
+
+    	if (height>=800|| !ground && !onLake && height<4 && vel>0) game_over_menu();
 
         if (emptyingTank==true){
             done=particleMgr();
@@ -600,8 +625,9 @@ var flag = true; // flag per impendire che venga chiamato SetInterval(reset_atti
 var flag_int = true; // flag per impendire che venga chiamato SetInterval(set_flap_int) più volte durante l'esecuzione della funzione
 var flag_ext = true; // flag per impendire che venga chiamato SetInterval(set_flap_ext) più volte durante l'esecuzione della funzione
 var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(motion) e SetInterval(manage_velocity) solo una volta
-var tank = true //TODO ELE rimettere a false appena introdotto lago: false; // variabile true se il serbatoio è pieno, false altrimenti
-var lake = false; // variabile true se sto sulla verticale del mare, false se sto sulla terra
+var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
+var onLake = false; // variabile true se sto sul lago, false altrimenti
+var going_up=false; //true se risalendo da lago
 var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
 var emptyingTank=false; //true se si sta svuotando serbatoio
 var roll = 0; // angolo di rollio
@@ -818,20 +844,33 @@ function motion() {
     }
     else if (!emptyingTank) {
 
-        if (flap_timone.rotation.z > 0) { // up
-            model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
+        if (onLake) {
+            if (flap_timone.rotation.z > 0 && vel > 150) { // up
+                if (model.position.y<4.2)  model.position.y=4.2;         
+                model.rotateZ(-Math.PI/400*flap_timone.rotation.z);
+                going_up=true;
+            }
+            else if (height < 4) model.position.y=4.5;
+            if (height > 4) {
+                onLake = false;
+                going_up=false;
+            }
         }
         else {
-            model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
-        }
+            if (flap_timone.rotation.z > 0) { // up
+                model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
+            }
+            else {
+                model.rotateZ(-Math.PI/250*flap_timone.rotation.z);
+            }
 
-        if (flap_int_dx.rotation.z < 0) { // destra
-            model.rotateX(Math.PI/400*flap_int_dx.rotation.z);
+            if (flap_int_dx.rotation.z < 0) { // destra
+                model.rotateX(Math.PI/400*flap_int_dx.rotation.z);
+            }
+            else { // sinistra
+                model.rotateX(-Math.PI/400*flap_int_sx.rotation.z);
+            }
         }
-        else { // sinistra
-            model.rotateX(-Math.PI/400*flap_int_sx.rotation.z);
-        }
-
     }
 
     model.translateX(-vel*0.01);
@@ -874,7 +913,7 @@ function manage_velocity() {
     else if (vel > 206 && motors < 3) vel -= 0.5;
     else if (vel > 151 && motors < 2) vel -= 0.5;
 
-    height = model.position.y*0.1;
+    height = model.position.y*0.7;
 
 }
 
@@ -906,7 +945,7 @@ function messages() {
     else if (height > 4 && height < 100 && carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70) message = "Be careful, you're flying too low, increase the altitude!";
-    else if (lake && !tank) message = "All right, approach the water to fill the tank [-press spacebar-].";
+    else if (onLake && !tank) message = "All right, fill the tank [-press spacebar-].";
     else if (!tank) message = "Ok, now go to the lake to fill the tank!";
     else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
     else if (pressed_bar && !emptyingTank) message= "You can't empty the tank while you're turning! Re-try with roll angle between -20° and 20° and a pitch between -40° and 80°"
@@ -979,6 +1018,7 @@ function onDocumentKeyDown(event) {
         }
     }
     else if (keyCode == 65) { // a
+        if (onLake) return;
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -998,6 +1038,7 @@ function onDocumentKeyDown(event) {
         }
     }
     else if (keyCode == 68) { // d
+        if (onLake) return;
         clearInterval(reset);
         clearInterval(reset_int);
         clearInterval(reset_ext);
@@ -1100,8 +1141,11 @@ function onDocumentKeyDown(event) {
                 waterClock.start();
                 tank=false;
                 emptyingTank=true;
-                emptying_bar();
+                moving_bar(0);
             }
+        }
+        else if (onLake){
+            moving_bar(1);
         }
     }
 };
@@ -1154,6 +1198,22 @@ function audio_game(val){
     motor_sound.sound.volume=1;
     cart_sound.sound.volume=1;
   }
+}
+
+function activate_light_mode(){
+    elem= document.getElementById("buttonL");
+    elem.style.transition = "opacity 0.5s linear 0s";
+    elem.style.WebkitTransition ="opacity 0.5s linear 0s";
+    elem.style.OTransition="opacity 0.5s linear 0s";
+    elem.style.MozTransition="opacity 0.5s linear 0s";
+    if (light_mode) {
+        light_mode=false;
+        elem.style.opacity = 0.5; 
+    }
+    else {
+        light_mode=true;
+        elem.style.opacity = 1;   
+    } 
 }
 
 function play_pause() {
@@ -1243,15 +1303,14 @@ function reset_var(){
 	pressed_bar=false;
 	ground = true;
 	vel = 0;
-        texLoader = null;
-        GLTFloader = null;
 	height = 0;
 	flag = true;
 	flag_int = true;
 	flag_ext = true;
 	flag_motors = false;
-	tank = true; //TODO ELE rimettere a false appena introdotto lago
-	lake = false;
+	tank = false; 
+	onLake = false;
+    going_up=false;
 	fire = false;
 	emptyingTank=false;
 	roll = 0;
@@ -1261,10 +1320,8 @@ function reset_var(){
 	time = [];
 
 	model.position.set(10, 4, 9);
-        scene.remove(model);
+    scene.remove(model);
 	model.dispose();
-        texLoader = new THREE.TextureLoader();
-        GLTFloader = new THREE.GLTFLoader();
 }
 
 function partial_init(){
@@ -1515,13 +1572,14 @@ function particleMgr ()
     if (count==particleCount) return true;
 }
 
-function emptying_bar(){
+function moving_bar(fill){
    var elem = document.getElementById("tankBar");
    elem.style.transition = "width 3.5s linear 0s";
    elem.style.WebkitTransition ="width 3.5s linear 0s";
    elem.style.OTransition="width 3.5s linear 0s";
    elem.style.MozTransition="width 3.5s linear 0s";
-   elem.style.width = "0%";
+   if (fill) elem.style.width = "100%"; 
+   else elem.style.width = "0%";
 }
 
 function posizione_sopra_aereoporto(posX, posY) {

@@ -54,6 +54,14 @@ body {
   width: 10vw;
 }
 
+#buttonL{
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+  width: 11vw;
+  opacity: 0.5;
+}
+
 .column {
   text-align: center;
   font-family: Title;
@@ -265,7 +273,7 @@ body {
  }
 
 #tankBar {
-  width: 100%;
+  width: 0%;
   height: 2vw;
   background-color: rgb(5,193,255);
 }
