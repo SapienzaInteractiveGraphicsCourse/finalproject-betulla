@@ -404,7 +404,7 @@ function init() {
 
     GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
             tree = gltf.scene;
-            tree.scale.set(0.06, 0.06, 0.06);
+            tree.scale.set(0.08, 0.08, 0.08);
             for(var i = 0; i < 700; i++){
                 tree = tree.clone();
                 trees.push(tree);
@@ -1529,7 +1529,7 @@ function moving_bar(fill){
     else elem.style.width = "0%";
 }
 
-function posizione_sopra_aeroporto(posX, posY) {
+function posizione_sopra_aereoporto(posX, posY) {
     if(posY < 100 && posY > -100 && posX > -1000 && posX < 100)
         return true;
     return false;
@@ -1562,7 +1562,7 @@ function render_trees(posX, posY){
             j++;
             if(j == 5)
                 break;
-        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aeroporto(posizioneX, posizioneY));
+        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
         if(j == 5){
             scene.remove(trees[i]);
         }
@@ -1602,7 +1602,7 @@ function update_trees(){
                 break;
             posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
             posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
-        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aeroporto(posizioneX, posizioneY));
+        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
         if(j == 5){
             scene.remove(trees[i]);
         }
@@ -1640,6 +1640,9 @@ function fire_expansion(){
 
     if (fires.length == 0) {
         vittoria = true;
+        return;
+    }
+    if(fires.length > 1000){
         return;
     }
     fireRadius = fireRadius + fireSpeed;
