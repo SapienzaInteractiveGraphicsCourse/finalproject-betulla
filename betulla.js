@@ -387,7 +387,7 @@ function init() {
 
     GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
         tree = gltf.scene;
-        tree.scale.set(0.1, 0.1, 0.1);
+        tree.scale.set(0.06, 0.06, 0.06);
         for(var i = 0; i < 700; i++){
                 tree = tree.clone();
                 trees.push(tree);
@@ -429,8 +429,7 @@ function init() {
         textureHeight: 512,
         debug: false
     } );
-    fire.position.set(-200, 20, 0);
-    fire.scale.set(1,1,1);
+    fire.position.set(-500, 220, 0);
     scene.add( fire );
     fire = fire.clone()
     fire.rotation.y = Math.PI/2;
@@ -469,7 +468,7 @@ function init() {
         params.drag = 0.07;
         params.airSpeed = 12.0;
         params.windX = 0.0;
-        params.windY = 0.75;
+        params.windY = 0.05;
         params.speed = 500.0;
         params.massConservation = false;
         updateAll();
@@ -1601,12 +1600,21 @@ function render_trees(posX, posY){
     var minY = posY - renderRadius;
     var maxY = posY + renderRadius;
     for(var i = 0; i < trees.length; i++){
+        var j = 0;
         do{
             var posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
             var posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
+            j++;
+            if(j == 5)
+                break;
         }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
-        trees[i].position.set(posizioneX, 0, posizioneY);
-        scene.add(trees[i]);
+        if(j == 5){
+            scene.remove(trees[i]);
+        }
+        else{
+            trees[i].position.set(posizioneX, 0, posizioneY);
+            scene.add(trees[i]);
+        }
     }
 }
 
@@ -1626,12 +1634,21 @@ function update_trees(){
             trees[i].position.z < maxY && trees[i].position.z > minY){
             continue;
         }
+        var j = 0;
         do{
+            j++;
+            if(j == 5)
+                break;
             posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
             posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
         }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
-        trees[i].position.set(posizioneX, 0, posizioneY);
-        scene.add(trees[i]);
+        if(j == 5){
+            scene.remove(trees[i]);
+        }
+        else{
+            trees[i].position.set(posizioneX, 0, posizioneY);
+            scene.add(trees[i]);
+        }
     }
 }
 
