@@ -265,7 +265,7 @@ body {
  }
 
 #tankBar {
-  width: 100%;
+  width: 0%;
   height: 2vw;
   background-color: rgb(5,193,255);
 }
