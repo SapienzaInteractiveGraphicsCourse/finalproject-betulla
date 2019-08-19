@@ -1578,6 +1578,8 @@ function update_trees(){
 
     var posizioneAereoX = model.position.x;
     var posizioneAereoY = model.position.z;
+    if(posizione_sopra_acqua(posizioneAereoX, posizioneAereoY))
+        return;
     var minX = posizioneAereoX - renderRadius;
     var maxX = posizioneAereoX + renderRadius;
     var minY = posizioneAereoY - renderRadius;
