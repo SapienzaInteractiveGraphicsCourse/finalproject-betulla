@@ -4,10 +4,10 @@ var camera, scene, renderer;
 
 var playFlag = false; //false=menu/pausa, true=gioco attivo
 
-var volume=true; //true= volume attivo
-var menu_music= document.getElementById("menuMusic_id");
+var volume = true; //true= volume attivo
+var menu_music = document.getElementById("menuMusic_id");
 
-var first_time=true;
+var first_time = true;
 
 var waterPosition = [-15000, 6000];
 var waterRadius = 12500;
@@ -31,7 +31,7 @@ var clock, startTime, pauseClock, pauseTime, waterClock;
 var pauseInterval=0; //intervallo di tempo passato in pausa
 
 var canvas, canvas_id;
-var light_mode=false;
+var light_mode = false;
 
 var difficulty_html, difficulty, height_difficulty;
 const height_difficulty_h=6.3;
@@ -135,26 +135,23 @@ function init() {
     GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
             model = gltf.scene;
-            canadair2 = model.clone();
-            canadair3 = model.clone();
-
-            oggettiCaricati += 1;
-
-            canadair2.position.set(-300, 5, -60);
-            canadair2.scale.set(1, 1, 1);
-            canadair2.rotation.y = Math.PI *  0.5;
-            scene.add(canadair2);
-
-            canadair3.position.set(-5, 5, 50);
-            canadair3.scale.set(1, 1, 1);
-            canadair3.rotation.y = -Math.PI *0.5;
-            scene.add(canadair3);
-
+            if(!light_mode){
+                canadair2 = model.clone();
+                canadair3 = model.clone();
+                canadair2.position.set(-300, 5, -60);
+                canadair2.scale.set(1, 1, 1);
+                canadair2.rotation.y = Math.PI *  0.5;
+                scene.add(canadair2);
+                canadair3.position.set(-5, 5, 50);
+                canadair3.scale.set(1, 1, 1);
+                canadair3.rotation.y = -Math.PI *0.5;
+                scene.add(canadair3);
+                oggettiCaricati += 1;
+                aeroporto.push(canadair2);
+                aeroporto.push(canadair3);
+            }
             model.position.set(10, 4, 9);
             model.scale.set(1, 1, 1);
-
-            aeroporto.push(canadair2);
-            aeroporto.push(canadair3);
 
             // Rename the children
             model.traverse(function (children){
@@ -244,43 +241,45 @@ function init() {
     oggettiCaricati += 1;
 
     //load grass
-    var grassLine = [];
-    var grassLine2 = [];
-    GLTFloader.load('Models/yet_another_grass_model/scene.gltf', function ( gltf ) {
-            grass = gltf.scene;
-            grass.scale.set(0.05, 0.05, 0.05);
-            grass.position.set(-20, 0, 60);
-            for(var i = 0; i < 12; i++){
-                grassLine[i] = grass.clone();
-                grassLine[i].position.set(-i*70, 0, 60);
-                scene.add( grassLine[i] );
-            }
-            for(var j = 5; j < 12; j++){
-                grassLine2[j] = grass.clone();
-                grassLine2[j].position.set(-j*70, 0, 130);
-                scene.add( grassLine2[j] );
-            }
-            for(var j = 12; j < 19; j++){
-                grassLine2[j] = grass.clone();
-                grassLine2[j].position.set(-(j-10)*70, 0, -110);
-                scene.add( grassLine2[j] );
-            }
-            for(var i = 12; i < 24; i++){
-                grassLine[i] = grass.clone();
-                grassLine[i].position.set(-(i-12)*70, 0, -40);
-                scene.add( grassLine[i] );
-            }
-            oggettiCaricati += 1;
-            //scene.add( grass );
-        },
-        // called while loading is progressing
-        function ( xhr ) {
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-        },
-        // called when loading has errors
-        function ( error ) {
-            console.log( 'An error happened' );
-        });
+    if(!light_mode){
+        var grassLine = [];
+        var grassLine2 = [];
+        GLTFloader.load('Models/yet_another_grass_model/scene.gltf', function ( gltf ) {
+                grass = gltf.scene;
+                grass.scale.set(0.05, 0.05, 0.05);
+                grass.position.set(-20, 0, 60);
+                for(var i = 0; i < 12; i++){
+                    grassLine[i] = grass.clone();
+                    grassLine[i].position.set(-i*70, 0, 60);
+                    scene.add( grassLine[i] );
+                }
+                for(var j = 5; j < 12; j++){
+                    grassLine2[j] = grass.clone();
+                    grassLine2[j].position.set(-j*70, 0, 130);
+                    scene.add( grassLine2[j] );
+                }
+                for(var j = 12; j < 19; j++){
+                    grassLine2[j] = grass.clone();
+                    grassLine2[j].position.set(-(j-10)*70, 0, -110);
+                    scene.add( grassLine2[j] );
+                }
+                for(var i = 12; i < 24; i++){
+                    grassLine[i] = grass.clone();
+                    grassLine[i].position.set(-(i-12)*70, 0, -40);
+                    scene.add( grassLine[i] );
+                }
+                oggettiCaricati += 1;
+                //scene.add( grass );
+            },
+            // called while loading is progressing
+            function ( xhr ) {
+                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+            },
+            // called when loading has errors
+            function ( error ) {
+                console.log( 'An error happened' );
+            });
+    }
 
     //load airport
 
@@ -313,65 +312,68 @@ function init() {
         });
 
     // tower
-    GLTFloader.load('Models/radio_tower/scene.gltf', function ( gltf ) {
-            tower = gltf.scene;
-            tower.position.set(-600, 0, -60);
-            tower.scale.set(0.2, 0.2, 0.2);
-            scene.add( tower );
-            oggettiCaricati += 1;
-            aeroporto.push(tower);
-        },
-        // called while loading is progressing
-        function ( xhr ) {
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-        },
-        // called when loading has errors
-        function ( error ) {
-            console.log( 'An error happened' );
-        });
-
+    if(!light_mode){
+        GLTFloader.load('Models/radio_tower/scene.gltf', function ( gltf ) {
+                tower = gltf.scene;
+                tower.position.set(-600, 0, -60);
+                tower.scale.set(0.2, 0.2, 0.2);
+                scene.add( tower );
+                oggettiCaricati += 1;
+                aeroporto.push(tower);
+            },
+            // called while loading is progressing
+            function ( xhr ) {
+                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+            },
+            // called when loading has errors
+            function ( error ) {
+                console.log( 'An error happened' );
+            });
+    }
     // hangar
-    GLTFloader.load('Models/hangar/scene.gltf', function ( gltf ) {
-            hangar = gltf.scene;
-            hangar.position.set(-100, 0, 60);
-            hangar.scale.set(3, 3, 3);
-            //hanger.rotation.y = Math.PI/2;
-            scene.add( hangar );
+    if(!light_mode){
+        GLTFloader.load('Models/hangar/scene.gltf', function ( gltf ) {
+                hangar = gltf.scene;
+                hangar.position.set(-100, 0, 60);
+                hangar.scale.set(3, 3, 3);
+                //hanger.rotation.y = Math.PI/2;
+                scene.add( hangar );
 
-            hangar1 = hangar.clone();
-            hangar1.position.set(-150, 0, 60);
-            hangar1.scale.set(3, 3, 3);
-            scene.add(hangar1);
+                hangar1 = hangar.clone();
+                hangar1.position.set(-150, 0, 60);
+                hangar1.scale.set(3, 3, 3);
+                scene.add(hangar1);
 
-            hangar2 = hangar.clone();
-            hangar2.position.set(-200, 0, 60);
-            hangar2.scale.set(3, 3, 3);
-            scene.add(hangar2);
+                hangar2 = hangar.clone();
+                hangar2.position.set(-200, 0, 60);
+                hangar2.scale.set(3, 3, 3);
+                scene.add(hangar2);
 
-            hangar3 = hangar.clone();
-            hangar3.position.set(-50, 0, 60);
-            hangar3.scale.set(3, 3, 3);
-            scene.add(hangar3);
+                hangar3 = hangar.clone();
+                hangar3.position.set(-50, 0, 60);
+                hangar3.scale.set(3, 3, 3);
+                scene.add(hangar3);
 
-            hangar4 = hangar.clone();
-            hangar4.position.set(-250, 0, 60);
-            hangar4.scale.set(3, 3, 3);
-            scene.add(hangar4);
-            oggettiCaricati += 1;
-            aeroporto.push(hangar);
-            aeroporto.push(hangar1);
-            aeroporto.push(hangar2);
-            aeroporto.push(hangar3);
-            aeroporto.push(hangar4);
-        },
-        // called while loading is progressing
-        function ( xhr ) {
-            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-        },
-        // called when loading has errors
-        function ( error ) {
-            console.log( 'An error happened' );
-        });
+                hangar4 = hangar.clone();
+                hangar4.position.set(-250, 0, 60);
+                hangar4.scale.set(3, 3, 3);
+                scene.add(hangar4);
+                oggettiCaricati += 1;
+                aeroporto.push(hangar);
+                aeroporto.push(hangar1);
+                aeroporto.push(hangar2);
+                aeroporto.push(hangar3);
+                aeroporto.push(hangar4);
+            },
+            // called while loading is progressing
+            function ( xhr ) {
+                console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+            },
+            // called when loading has errors
+            function ( error ) {
+                console.log( 'An error happened' );
+            });
+    }
 
     var mtlLoader = new THREE.MTLLoader();
     mtlLoader.load("Models/angar/Shelter_simple.mtl", function(materials){
@@ -408,10 +410,13 @@ function init() {
     });
 
     //load trees models
+    var treeNum = 700;
+    if(light_mode)
+        treeNum = 300;
     GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
             tree = gltf.scene;
             tree.scale.set(0.08, 0.08, 0.08);
-            for(var i = 0; i < 700; i++){
+            for(var i = 0; i < treeNum; i++){
                 tree = tree.clone();
                 trees.push(tree);
             }
@@ -1255,9 +1260,11 @@ function reset_var(){
     roll = 0;
     pitch = 0;
     aeroportoRenderizzato = true;
+    vittoria = false;
 
     particles = [];
     time = [];
+    fires = [];
 
     //svuotata barra tank
     document.getElementById("tankBar").style.width = "0%";
@@ -1644,8 +1651,8 @@ function render_airport(){
 function fire_expansion(){
     var minX = firePosition[0] - fireRadius;
     var maxX = firePosition[0] + fireRadius;
-    var minY = firePosition[0] - fireRadius;
-    var maxY = firePosition[0] + fireRadius;
+    var minY = firePosition[1] - fireRadius;
+    var maxY = firePosition[1] + fireRadius;
     console.log(fires.length);
     console.log(firePosition);
     if (!playFlag) return;
@@ -1683,6 +1690,8 @@ function fire_expansion(){
 
         }while((posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY)) &&
             !posizione_sopra_fuoco(posizioneX, posizioneY));
+        console.log("MARCELLOOOOOOOOOOOOO");
+        console.log(posizioneX+" "+posizioneY);
         fire1.position.set(posizioneX, 220, posizioneY);
         fire2.position.set(posizioneX, 220, posizioneY);
         fire3.position.set(posizioneX, 220, posizioneY);
