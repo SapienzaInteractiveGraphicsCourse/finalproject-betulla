@@ -880,7 +880,7 @@ function motion() {
 
     if (!onLake) model.rotateOnWorldAxis(vec, Math.PI*roll/20000);
 
-    model.translateX(-vel*0.01);
+    model.translateX(-vel*0.02);
     camera.lookAt(model.position);
 }
 
@@ -1001,8 +1001,6 @@ function onDocumentKeyDown(event) {
         case 66: // b
             clearInterval(reset);
             flag = false;
-            flag_int = false;
-            flag_ext = false;
             if (motors != 0 && motors != 5) {
                 motors += 1;
                 speed_helic += 0.05;
@@ -1017,8 +1015,6 @@ function onDocumentKeyDown(event) {
         case 78: // n
             clearInterval(reset);
             flag = false;
-            flag_int = false;
-            flag_ext = false;
             if (motors != 0 && motors != 1) {
                 motors -= 1;
                 speed_helic -= 0.05;
@@ -1091,123 +1087,6 @@ function onDocumentKeyDown(event) {
             }
             break;
     }
-
-    /*var keyCode = event.which;
-
-    //console.log(keyCode);
-
-    if(!playFlag) return;
-
-    if (keyCode == 77) { // m
-        if (motors == 0){
-            motors = 1;
-            speed_helic = 0.05;
-            engine = setInterval(go_motors, 1);
-            //sound on
-            motor_sound.sound.play();
-        }
-        else {
-            motors = 0;
-            speed_helic = 0;
-            clearInterval(engine);
-            //sound off
-            motor_sound.sound.pause();
-            motor_sound.sound.currentTime = 0;
-            motor_sound.sound.playbackRate=1;
-        }
-        if (!flag_motors) {
-            flag_motors = true;
-            setInterval(motion, 1);
-            setInterval(manage_velocity, 40);
-        }
-    }
-    else if (keyCode == 66) { // b
-        clearInterval(reset);
-        flag = false;
-        flag_int = false;
-        flag_ext = false;
-        if (motors != 0 && motors != 5) {
-            motors += 1;
-            speed_helic += 0.05;
-            motor_sound.sound.playbackRate +=.7;
-        }
-        if (weels != 5) {
-            weels += 1;
-            speed_weels += 0.1;
-        }
-
-    }
-    else if (keyCode == 78) { // n
-        clearInterval(reset);
-        flag = false;
-        flag_int = false;
-        flag_ext = false;
-        if (motors != 0 && motors != 1) {
-            motors -= 1;
-            speed_helic -= 0.05;
-            motor_sound.sound.playbackRate -=.7;
-        }
-    }
-    else if (keyCode == 65) { // a
-        if (pitch < 0.05 && pitch > -0.05 && roll <= 90 && !ground && !stalled && !emptyingTank && !onLake) {
-            clearInterval(reset);
-            flag = false;
-            model.rotateX(Math.PI/400);
-            roll += 180/400;
-        }
-    }
-    else if (keyCode == 68) { // d
-        if (pitch < 0.05 && pitch > -0.05 && roll >= -90 && !ground && !stalled && !emptyingTank && !onLake) {
-            clearInterval(reset);
-            flag = false;
-            model.rotateX(-Math.PI/400);
-            roll -= 180/400;
-        }
-    }
-    else if (keyCode == 87) { // w
-        if (roll < 0.05 && roll > -0.05 && pitch <= 60 && !emptyingTank && !onLake) {
-            clearInterval(reset);
-            flag = false;
-            model.rotateZ(Math.PI / 400);
-            pitch += 180 / 400;
-        }
-    }
-    else if (keyCode == 83) { // s
-        if (roll < 0.05 && roll > -0.05 && pitch >= -60 && (!stalled || vel > 150) && !emptyingTank) {
-            clearInterval(reset);
-            flag = false;
-            model.rotateZ(-Math.PI / 400);
-            pitch -= 180 / 400;
-        }
-    }
-    else if (keyCode == 67) { // c
-        if (carrello && height>10) {
-            t = 0;
-            s = 0;
-            carrello = false;
-            pressed_c= true;
-            cart_sound.sound.play();
-            setInterval(close_doors_ant, 10);
-            setInterval(close_doors_back, 10);
-        }
-    }
-    else if (keyCode == 32) { //space bar
-        if (tank) {
-            pressed_bar= true;
-            let r=roll.toFixed(0);
-            let p =pitch.toFixed(0);
-            if (r >-20 && r<20 && p>-40 && p<80 && (!onLake || height > height_difficulty)){
-                waterClock.start();
-                tank=false;
-                emptyingTank=true;
-                moving_bar(0);
-            }
-        }
-        else if (onLake && !emptyingTank){
-            moving_bar(1);
-            tank = true;
-        }
-    }*/
 };
 
 //implement timer
@@ -1361,8 +1240,6 @@ function reset_var(){
     vel = 0;
     height = 0;
     flag = true;
-    flag_int = true;
-    flag_ext = true;
     flag_motors = false;
     tank = false;
     onLake = false;
