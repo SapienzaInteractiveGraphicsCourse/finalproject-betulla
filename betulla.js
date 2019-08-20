@@ -1,25 +1,55 @@
 var vittoria = false;
+
 var camera, scene, renderer;
+
 var playFlag = false; //false=menu/pausa, true=gioco attivo
+
 var volume=true; //true= volume attivo
 var menu_music= document.getElementById("menuMusic_id");
+
 var first_time=true;
 
 var waterPosition = [-15000, 6000];
 var waterRadius = 12500;
 
 var firePosition = [0,0];
-var fireRadius;
-var fireSpeed;
+var fireRadius, fireSpeed, fireInterval;
 var fires = [];
-var fireInterval
 
 var renderRadius = 3000;
 var oggettiCaricati = 0;
-var trees = [];
-var aeroporto = [];
 
+var trees = [];
+
+var aeroporto = [];
 var aeroportoRenderizzato = true;
+
+var texLoader = new THREE.TextureLoader();
+var GLTFloader = new THREE.GLTFLoader();
+
+var clock, startTime, pauseClock, pauseTime, waterClock;
+var pauseInterval=0; //intervallo di tempo passato in pausa
+
+var canvas, canvas_id;
+var light_mode=false;
+
+var difficulty_html, difficulty, height_difficulty;
+const height_difficulty_h=6.3;
+const height_difficulty_m=9.3;
+const height_difficulty_e=13.3;
+const height_difficulty_b=18.3;
+
+var motor_sound=new initialize_sound("sounds/motors.ogg");
+var cart_sound =new initialize_sound("sounds/cart.mp3");
+var gameover_sound=new initialize_sound("sounds/gameover.mp3");
+motor_sound.sound.loop=true;
+cart_sound.sound.playbackRate=0.3;
+cart_sound.sound.onended=function(){cart_soundFlag=true;};
+cart_soundFlag=false;
+
+var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
+var message_gameOver = "";
+
 
 function start_game() {
     menu_music.muted = true;
@@ -34,8 +64,8 @@ function start_game() {
 }
 
 function modal(my_modal) {
-    var modal = document.getElementById(my_modal);
 
+    var modal = document.getElementById(my_modal);
     var span = document.getElementsByClassName("close")[0];
 
     modal.style.display = "block";
@@ -51,30 +81,6 @@ function modal(my_modal) {
         }
     }
 }
-
-var texLoader = new THREE.TextureLoader();
-var GLTFloader = new THREE.GLTFLoader();
-
-var clock, startTime, pauseClock, pauseTime, waterClock;
-var pauseInterval=0; //intervallo di tempo passato in pausa
-var canvas, canvas_id;
-var difficulty_html, difficulty;
-var light_mode=false;
-var height_difficulty;
-const height_difficulty_h=6.3;
-const height_difficulty_m=9.3;
-const height_difficulty_e=13.3;
-const height_difficulty_b=18.3;
-var motor_sound=new initialize_sound("sounds/motors.ogg");
-motor_sound.sound.loop=true;
-var cart_sound =new initialize_sound("sounds/cart.mp3");
-cart_sound.sound.playbackRate=0.3;
-cart_sound.sound.onended=function(){cart_soundFlag=true;};
-cart_soundFlag=false;
-var gameover_sound= new initialize_sound("sounds/gameover.mp3");
-
-var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
-var message_gameOver = "";
 
 function init() {
 
@@ -126,15 +132,13 @@ function init() {
     renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
     //Load canadair
-
-
     GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
             model = gltf.scene;
             canadair2 = model.clone();
             canadair3 = model.clone();
 
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
 
             canadair2.position.set(-300, 5, -60);
             canadair2.scale.set(1, 1, 1);
@@ -152,6 +156,7 @@ function init() {
             aeroporto.push(canadair2);
             aeroporto.push(canadair3);
 
+            // Rename the children
             model.traverse(function (children){
 
                 if (children.name == "heliceG") elica_sx = children;
@@ -204,15 +209,11 @@ function init() {
         },
         // called while loading is progressing
         function ( xhr ) {
-
             console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
-
         },
         // called when loading has errors
         function ( error ) {
-
             console.log( 'An error happened' );
-
         });
 
     //load the world
@@ -231,7 +232,7 @@ function init() {
         groundMaterial.map = map;
         groundMaterial.needsUpdate = true;
     } );
-    oggettiCaricati = oggettiCaricati + 1;
+    oggettiCaricati += 1;
 
     // lake
     var lakeGeometry = new THREE.CircleGeometry( waterRadius, 64 );
@@ -240,7 +241,7 @@ function init() {
     lake.rotation.x = Math.PI * - 0.5;
     lake.position.set(waterPosition[0], 2, waterPosition[1]);
     scene.add( lake );
-    oggettiCaricati = oggettiCaricati + 1
+    oggettiCaricati += 1;
 
     //load grass
     var grassLine = [];
@@ -269,7 +270,7 @@ function init() {
                 grassLine[i].position.set(-(i-12)*70, 0, -40);
                 scene.add( grassLine[i] );
             }
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
             //scene.add( grass );
         },
         // called while loading is progressing
@@ -282,6 +283,8 @@ function init() {
         });
 
     //load airport
+
+    // sidewalk
     GLTFloader.load('Models/sidewalk/scene.gltf', function ( gltf ) {
             street = gltf.scene;
             for(var i = 0; i < 15; i++){
@@ -298,7 +301,7 @@ function init() {
                 scene.add( street );
                 aeroporto.push(street);
             }
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
         },
         // called while loading is progressing
         function ( xhr ) {
@@ -309,12 +312,13 @@ function init() {
             console.log( 'An error happened' );
         });
 
+    // tower
     GLTFloader.load('Models/radio_tower/scene.gltf', function ( gltf ) {
             tower = gltf.scene;
             tower.position.set(-600, 0, -60);
             tower.scale.set(0.2, 0.2, 0.2);
             scene.add( tower );
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
             aeroporto.push(tower);
         },
         // called while loading is progressing
@@ -326,6 +330,7 @@ function init() {
             console.log( 'An error happened' );
         });
 
+    // hangar
     GLTFloader.load('Models/hangar/scene.gltf', function ( gltf ) {
             hangar = gltf.scene;
             hangar.position.set(-100, 0, 60);
@@ -352,7 +357,7 @@ function init() {
             hangar4.position.set(-250, 0, 60);
             hangar4.scale.set(3, 3, 3);
             scene.add(hangar4);
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
             aeroporto.push(hangar);
             aeroporto.push(hangar1);
             aeroporto.push(hangar2);
@@ -394,15 +399,15 @@ function init() {
             mesh2.position.set(-300, -5, 60);
             mesh2.scale.set(1, 1, 1);
             scene.add(mesh2);
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
             aeroporto.push(mesh);
             aeroporto.push(mesh1);
             aeroporto.push(mesh2);
             setInterval(render_airport, 2000);
         });
     });
-    //load trees models
 
+    //load trees models
     GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
             tree = gltf.scene;
             tree.scale.set(0.08, 0.08, 0.08);
@@ -410,7 +415,7 @@ function init() {
                 tree = tree.clone();
                 trees.push(tree);
             }
-            oggettiCaricati = oggettiCaricati + 1;
+            oggettiCaricati += 1;
             render_trees(0, 0);
             setInterval(update_trees,1000);
         },
@@ -950,9 +955,11 @@ function messages() {
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 70 && !posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
+    else if (!onLake && !tank && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Descend to an altitude of at least " + height_difficulty + " meters to be able to fill the tank";
     else if (onLake && !tank) message = "All right, fill the tank [-press spacebar-].";
+    else if (onLake && tank) message = "Perfect, now gain some altitude and go to the fire.";
     else if (!tank) message = "Ok, now go to the lake to fill the tank!";
-    else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
+    else if (fire && tank) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
     else if (pressed_bar && !emptyingTank) message= "You can't empty the tank while you're turning! Re-try with roll angle between -20° and 20° and a pitch between -40° and 80°";
     else if (tank) message = "Come on, get to the fire and empty the tank!";
     else if (emptyingTank && fire) message= exclamation[Math.floor(Math.random()*textArray.length)];
@@ -1212,6 +1219,7 @@ function load_menu(){
 }
 
 function reset_var(){
+
     clearInterval(engine);
     clearInterval(reset);
 
@@ -2243,7 +2251,6 @@ Fire.SourceShader = {
     ].join( "\n" )
 };
 
-
 Fire.DiffuseShader = {
 
     uniforms: {
@@ -2431,7 +2438,6 @@ Fire.DriftShader = {
     ].join( "\n" )
 };
 
-
 Fire.ProjectionShader1 = {
 
     uniforms: {
@@ -2487,7 +2493,6 @@ Fire.ProjectionShader1 = {
 
     ].join( "\n" )
 };
-
 
 Fire.ProjectionShader2 = {
 
@@ -2545,7 +2550,6 @@ Fire.ProjectionShader2 = {
 
     ].join( "\n" )
 };
-
 
 Fire.ProjectionShader3 = {
 
@@ -2670,7 +2674,6 @@ Fire.ColorShader = {
 
     ].join( "\n" )
 };
-
 
 Fire.DebugShader = {
 
