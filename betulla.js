@@ -74,6 +74,7 @@ cart_soundFlag=false;
 var gameover_sound= new initialize_sound("sounds/gameover.mp3");
 
 var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
+var message_gameOver = "";
 
 function init() {
 
@@ -597,7 +598,13 @@ function animate() {
             }
         }
 
-        if (height>=800 || (height < 1 && !ground) || (carrello && onLake) || !ground && !onLake && height<4 && vel>0) game_over_menu();
+        if (height>800 || (height < 1 && !ground) || (carrello && onLake) || !ground && !onLake && height<4 && vel>0) {
+            if (height > 800) message_gameOver = "You've exceeded the 800-metre limit";
+            else if (height < 1 && !ground) message_gameOver = "You crashed";
+            else if (carrello && onLake) message_gameOver = "The wheels hit the lake and crashed you";
+            else if (!ground && !onLake && height < 4 && vel > 0) message_gameOver = "You crashed";
+            game_over_menu();
+        }
 
         if (onLake && height > height_difficulty) {
             onLake = false;
@@ -920,7 +927,7 @@ function stall() {
 
 function messages() {
 
-    exclamation= [ "Perfect!", "Well done!", "Good job!"]
+    exclamation = [ "Perfect!", "Well done!", "Good job!"];
 
     if (ground && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
     else if (ground && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
@@ -929,29 +936,150 @@ function messages() {
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
-    else if (height < 70 && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
+    else if (height < 70 && !posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
     else if (onLake && !tank) message = "All right, fill the tank [-press spacebar-].";
     else if (!tank) message = "Ok, now go to the lake to fill the tank!";
     else if (fire) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
     else if (pressed_bar && !emptyingTank) message= "You can't empty the tank while you're turning! Re-try with roll angle between -20° and 20° and a pitch between -40° and 80°";
     else if (tank) message = "Come on, get to the fire and empty the tank!";
     else if (emptyingTank && fire) message= exclamation[Math.floor(Math.random()*textArray.length)];
-    else if (emptyingTank && !fire) message= "You need to empty the tank on the fire!"
+    else if (emptyingTank && !fire) message= "You need to empty the tank on the fire!";
 
 }
 
-
 document.addEventListener('keyup', logKey);
-
 function logKey() {
     if (!flag) {
         flag = true;
-        reset = setInterval(reset_attitude, 2);
+        reset = setInterval(reset_attitude, 1);
     }
 }
+
 document.addEventListener("keydown", onDocumentKeyDown, false);
 function onDocumentKeyDown(event) {
-    var keyCode = event.which;
+
+    if (!playFlag) return;
+
+    switch (event.keyCode) {
+
+        case 77: // m
+            if (motors == 0) {
+                motors = 1;
+                speed_helic = 0.05;
+                engine = setInterval(go_motors, 1);
+                //sound on
+                motor_sound.sound.play();
+            } else {
+                motors = 0;
+                speed_helic = 0;
+                clearInterval(engine);
+                //sound off
+                motor_sound.sound.pause();
+                motor_sound.sound.currentTime = 0;
+                motor_sound.sound.playbackRate = 1;
+            }
+            if (!flag_motors) {
+                flag_motors = true;
+                setInterval(motion, 1);
+                setInterval(manage_velocity, 40);
+            }
+            break;
+
+        case 66: // b
+            clearInterval(reset);
+            flag = false;
+            flag_int = false;
+            flag_ext = false;
+            if (motors != 0 && motors != 5) {
+                motors += 1;
+                speed_helic += 0.05;
+                motor_sound.sound.playbackRate += .7;
+            }
+            if (weels != 5) {
+                weels += 1;
+                speed_weels += 0.1;
+            }
+            break;
+
+        case 78: // n
+            clearInterval(reset);
+            flag = false;
+            flag_int = false;
+            flag_ext = false;
+            if (motors != 0 && motors != 1) {
+                motors -= 1;
+                speed_helic -= 0.05;
+                motor_sound.sound.playbackRate -= .7;
+            }
+            break;
+
+        case 65: // a
+            if (pitch < 0.05 && pitch > -0.05 && roll <= 90 && !ground && !stalled && !emptyingTank && !onLake) {
+                clearInterval(reset);
+                flag = false;
+                model.rotateX(Math.PI / 400);
+                roll += 180 / 400;
+            }
+            break;
+
+        case 68: // d
+            if (pitch < 0.05 && pitch > -0.05 && roll >= -90 && !ground && !stalled && !emptyingTank && !onLake) {
+                clearInterval(reset);
+                flag = false;
+                model.rotateX(-Math.PI / 400);
+                roll -= 180 / 400;
+            }
+            break;
+
+        case 87: // w
+            if (roll < 0.05 && roll > -0.05 && pitch <= 60 && !emptyingTank && !onLake && !ground) {
+                clearInterval(reset);
+                flag = false;
+                model.rotateZ(Math.PI / 400);
+                pitch += 180 / 400;
+            }
+            break;
+
+        case 83: // s
+            if (roll < 0.05 && roll > -0.05 && pitch >= -60 && (!stalled || vel > 150) && !emptyingTank && (!ground || vel > 150)) {
+                clearInterval(reset);
+                flag = false;
+                model.rotateZ(-Math.PI / 400);
+                pitch -= 180 / 400;
+            }
+            break;
+
+        case 67: // c
+            if (carrello && !ground) {
+                t = 0;
+                s = 0;
+                carrello = false;
+                pressed_c = true;
+                cart_sound.sound.play();
+                setInterval(close_doors_ant, 10);
+                setInterval(close_doors_back, 10);
+            }
+            break;
+
+        case 32: //space bar
+            if (tank) {
+                pressed_bar = true;
+                let r = roll.toFixed(0);
+                let p = pitch.toFixed(0);
+                if (r > -20 && r < 20 && p > -40 && p < 80 && (!onLake || height > height_difficulty)) {
+                    waterClock.start();
+                    tank = false;
+                    emptyingTank = true;
+                    moving_bar(0);
+                }
+            } else if (onLake && !emptyingTank) {
+                moving_bar(1);
+                tank = true;
+            }
+            break;
+    }
+
+    /*var keyCode = event.which;
 
     //console.log(keyCode);
 
@@ -1066,7 +1194,7 @@ function onDocumentKeyDown(event) {
             moving_bar(1);
             tank = true;
         }
-    }
+    }*/
 };
 
 //implement timer
@@ -1318,8 +1446,6 @@ function partial_init(){
 
             });
             model.add( camera );
-            var worldAxis = new THREE.AxesHelper(20);
-            model.add(worldAxis);
             model.add( particleSys );
             scene.add( model );
         },function ( xhr ) {
