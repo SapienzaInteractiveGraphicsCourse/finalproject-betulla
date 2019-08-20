@@ -431,8 +431,7 @@ function init() {
             firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
             firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
         }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
-    
-    firePosition=[-300,0];
+
     var params = {
         color1: '#ffffff',
         color2: '#ffa000',
@@ -471,7 +470,7 @@ function init() {
     scene.add( fire );
     fires.push(fire);
     fire = fire.clone()
-    fire.rotation.y = Math.PI*2;
+    fire.rotation.y = 3.1241;
     fire.scale.set(2,2,2);
     scene.add( fire );
     fires.push(fire);
@@ -1066,14 +1065,15 @@ function onDocumentKeyDown(event) {
     else if (keyCode == 32) { //space bar
         if (tank) {
             pressed_bar= true;
-            let r=roll.toFixed(0);
-            let p =pitch.toFixed(0);
+            let r = roll.toFixed(0);
+            let p = pitch.toFixed(0);
             if (r >-20 && r<20 && p>-40 && p<80 && (!onLake || height > height_difficulty)){
                 waterClock.start();
                 tank=false;
                 emptyingTank=true;
                 moving_bar(0);
             }
+            var distanzaFuoco = (model.position.x - firePosition[0])+(model.position.z)
         }
         else if (onLake && !emptyingTank){
             moving_bar(1);
