@@ -13,8 +13,64 @@ var waterPosition = [-15000, 6000];
 var waterRadius = 12500;
 
 var firePosition = [0,0];
-var fireRadius, fireSpeed, fireInterval;
-var fires = [];
+var fireScale, fireSpeed, fireInterval;
+var ilFuoco = [];
+var fireParams = {
+        color1: '#ffffff',
+        color2: '#ffa000',
+        color3: '#000000',
+        colorBias: 0.8,
+        burnRate: 0.63,
+        diffuse: 4.33,
+        viscosity: 0.26,
+        expansion: - 0.17,
+        swirl: 43.79,
+        drag: 0.07,
+        airSpeed: 12.0,
+        windX: 0.0,
+        windY: 0.75,
+        speed: 500.0,
+        massConservation: false
+    };
+
+function updateAll(fire) {
+    fire.color1.set( fireParams.color1 );
+    fire.color2.set( fireParams.color2 );
+    fire.color3.set( fireParams.color3 );
+    fire.colorBias = fireParams.colorBias;
+    fire.burnRate = fireParams.burnRate;
+    fire.diffuse = fireParams.diffuse;
+    fire.viscosity = fireParams.viscosity;
+    fire.expansion = fireParams.expansion;
+    fire.swirl = fireParams.swirl;
+    fire.drag = fireParams.drag;
+    fire.airSpeed = fireParams.airSpeed;
+    fire.windVector.x = fireParams.windX;
+    fire.windVector.y = fireParams.windY;
+    fire.speed = fireParams.speed;
+    fire.massConservation = fireParams.massConservation;
+    fire.clearSources();
+    fire.addSource( 0.5, 0.1, 0.1, 1.0, 0.0, 1.0 );
+}
+
+fireParams.Campfire = function (fire) {
+    fireParams.color1 = '#ffffff';
+    fireParams.color2 = '#ffa000';
+    fireParams.color3 = '#000000';
+    fireParams.colorBias =  0.8;
+    fireParams.burnRate = 0.63;
+    fireParams.diffuse =4.33;
+    fireParams.viscosity = 0.26;
+    fireParams.expansion = - 0.17;
+    fireParams.swirl = 43.79;
+    fireParams.drag = 0.07;
+    fireParams.airSpeed = 12.0;
+    fireParams.windX = 0.0;
+    fireParams.windY = 0.05;
+    fireParams.speed = 500.0;
+    fireParams.massConservation = false;
+    updateAll(fire);
+};
 
 var renderRadius = 3000;
 var oggettiCaricati = 0;
@@ -88,27 +144,27 @@ function init() {
     difficulty = difficulty_html.options[difficulty_html.selectedIndex].text;
 
     if(difficulty === "Hard"){
-        fireSpeed = 100;
-        fireRadius = 1000;
-        fireInterval = 5000;
+        fireSpeed = 0.05;
+        fireScale = 10;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_h;
     }
     if(difficulty === "Normal"){
-        fireSpeed = 50;
-        fireRadius = 500;
-        fireInterval = 10000;
+        fireSpeed = 0.02;
+        fireScale = 5;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_m;
     }
     if(difficulty === "Easy"){
-        fireSpeed = 10;
-        fireRadius = 500;
-        fireInterval = 50000;
+        fireSpeed = 0.01;
+        fireScale = 5;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_e;
     }
     if(difficulty === "Beginner"){
         fireSpeed = 0;
-        fireRadius = 1000;
-        fireInterval = 120000;
+        fireScale = 2;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_b;
     }
 
@@ -434,99 +490,64 @@ function init() {
         });
 
     //fire
-    maxX = 1000;
-    minX = -1000;
-    maxY = 1000;
-    minY = -1000;
+    maxX = 15000;
+    minX = -15000;
+    maxY = 15000;
+    minY = -15000;
     do{
             firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
             firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
         }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
-    firePosition = [-2000,-1000];
-    var params = {
-        color1: '#ffffff',
-        color2: '#ffa000',
-        color3: '#000000',
-        colorBias: 0.8,
-        burnRate: 0.63,
-        diffuse: 4.33,
-        viscosity: 0.26,
-        expansion: - 0.17,
-        swirl: 43.79,
-        drag: 0.07,
-        airSpeed: 12.0,
-        windX: 0.0,
-        windY: 0.75,
-        speed: 500.0,
-        massConservation: false
-    };
+
     var plane = new THREE.PlaneBufferGeometry( 512, 512 );
     var fire = new Fire( plane, {
         textureWidth: 512,
         textureHeight: 512,
         debug: false
     } );
-    fire.position.set(firePosition[0], 220, firePosition[1]);
-    fire.scale.set(2,2,2);
+    fire.position.set(firePosition[0], 150*fireScale, firePosition[1]);
+    fire.scale.set(fireScale, fireScale, fireScale);
     scene.add( fire );
-    fires.push(fire);
+    ilFuoco.push(fire);
+
     var fire1 = fire.clone()
     fire1.rotation.y = Math.PI/2;
-    fire1.scale.set(2,2,2);
     scene.add( fire1 );
-    fires.push(fire1);
+    ilFuoco.push(fire1);
+
     var fire2 = fire.clone()
     fire2.rotation.y = Math.PI;
-    fire2.scale.set(2,2,2);
     scene.add( fire2 );
-    fires.push(fire2);
+    ilFuoco.push(fire2);
+
     var fire3 = fire.clone()
     fire3.rotation.y = 3.1241;
-    fire3.scale.set(2,2,2);
     scene.add( fire3 );
-    fires.push(fire3);
+    ilFuoco.push(fire3);
+/*
+    var fire4 = fire.clone()
+    fire4.rotation.y = Math.PI/4;
+    scene.add( fire4 );
+    ilFuoco.push(fire4);
+
+    var fire5 = fire.clone()
+    fire5.rotation.y = 3*Math.PI/4;
+    scene.add( fire5 );
+    ilFuoco.push(fire5);
+
+    var fire6 = fire.clone()
+    fire6.rotation.y = 5*Math.PI/4;
+    scene.add( fire6 );
+    ilFuoco.push(fire6);
+
+    var fire7 = fire.clone()
+    fire7.rotation.y = 7*Math.PI/4;
+    scene.add( fire7 );
+    ilFuoco.push(fire7);
+*/
     setInterval(fire_expansion, fireInterval);
 
-    function updateAll() {
-        fire.color1.set( params.color1 );
-        fire.color2.set( params.color2 );
-        fire.color3.set( params.color3 );
-        fire.colorBias = params.colorBias;
-        fire.burnRate = params.burnRate;
-        fire.diffuse = params.diffuse;
-        fire.viscosity = params.viscosity;
-        fire.expansion = params.expansion;
-        fire.swirl = params.swirl;
-        fire.drag = params.drag;
-        fire.airSpeed = params.airSpeed;
-        fire.windVector.x = params.windX;
-        fire.windVector.y = params.windY;
-        fire.speed = params.speed;
-        fire.massConservation = params.massConservation;
-        fire.clearSources();
-        fire.addSource( 0.5, 0.1, 0.1, 1.0, 0.0, 1.0 );
-    }
-
-    params.Campfire = function () {
-        params.color1 = '#ffffff';
-        params.color2 = '#ffa000';
-        params.color3 = '#000000';
-        params.colorBias =  0.8;
-        params.burnRate = 0.63;
-        params.diffuse =4.33;
-        params.viscosity = 0.26;
-        params.expansion = - 0.17;
-        params.swirl = 43.79;
-        params.drag = 0.07;
-        params.airSpeed = 12.0;
-        params.windX = 0.0;
-        params.windY = 0.05;
-        params.speed = 500.0;
-        params.massConservation = false;
-        updateAll();
-    };
-
-    params.Campfire();
+    fireParams.Campfire(fire);
 
     //create water particles
     defineParticles ();
@@ -1092,6 +1113,14 @@ function onDocumentKeyDown(event) {
                     emptyingTank = true;
                     moving_bar(0);
                 }
+                if(posizione_sopra_fuoco(model.position.x,model.position.z)){
+                    var distanzaDaFuoco = Math.sqrt(Math.pow((model.position.x - firePosition[0]),2)
+                        + Math.pow(model.position.z - firePosition[1],2));
+                    var quanto = 7 - Math.abs(distanzaDaFuoco)/100;
+                    if(quanto < 0)
+                        quanto = 1;
+                    fire_extinguish(quanto);
+                }
             } else if (onLake && !emptyingTank) {
                 moving_bar(1);
                 tank = true;
@@ -1264,7 +1293,6 @@ function reset_var(){
 
     particles = [];
     time = [];
-    fires = [];
 
     //svuotata barra tank
     document.getElementById("tankBar").style.width = "0%";
@@ -1283,27 +1311,27 @@ function partial_init(){
     difficulty = difficulty_html.options[difficulty_html.selectedIndex].text;
 
     if(difficulty === "Hard"){
-        fireSpeed = 100;
-        fireRadius = 1000;
-        fireInterval = 5000;
+        fireSpeed = 0.05;
+        fireScale = 10;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_h;
     }
     if(difficulty === "Normal"){
-        fireSpeed = 50;
-        fireRadius = 500;
-        fireInterval = 10000;
+        fireSpeed = 0.02;
+        fireScale = 5;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_m;
     }
     if(difficulty === "Easy"){
-        fireSpeed = 10;
-        fireRadius = 100;
-        fireInterval = 50000;
+        fireSpeed = 0.01;
+        fireScale = 5;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_e;
     }
     if(difficulty === "Beginner"){
         fireSpeed = 0;
-        fireRadius = 100;
-        fireInterval = 240000;
+        fireScale = 2;
+        fireInterval = 1000;
         height_difficulty = height_difficulty_b;
     }
 
@@ -1561,7 +1589,7 @@ function posizione_sopra_acqua(posX, posY){
 
 function posizione_sopra_fuoco(posX, posY){
     if( (posX - firePosition[0]) * (posX - firePosition[0]) + 
-        (posY - firePosition[1]) * (posY - firePosition[1]) <= fireRadius * fireRadius)
+        (posY - firePosition[1]) * (posY - firePosition[1]) <= (100*fireScale) * (100*fireScale))
         return true;
     return false;
 }
@@ -1595,8 +1623,6 @@ function update_trees(){
 
     var posizioneAereoX = model.position.x;
     var posizioneAereoY = model.position.z;
-    if(posizione_sopra_acqua(posizioneAereoX, posizioneAereoY))
-        return;
     var minX = posizioneAereoX - renderRadius;
     var maxX = posizioneAereoX + renderRadius;
     var minY = posizioneAereoY - renderRadius;
@@ -1604,6 +1630,12 @@ function update_trees(){
     var posizioneX = 0;
     var posizioneY = 0;
 
+    if(posizione_sopra_acqua(posizioneAereoX, posizioneAereoY)){
+        var minX = waterPosition[0] - waterRadius;
+        var maxX = waterPosition[0] + waterRadius;
+        var minY = waterPosition[1] - waterRadius;
+        var maxY = waterPosition[1] + waterRadius;  
+    }
     if(posizione_sopra_fuoco(posizioneAereoX, posizioneAereoY))
         fire = true;
     else
@@ -1649,75 +1681,32 @@ function render_airport(){
 }
 
 function fire_expansion(){
+    console.log(fireScale);
     if (!playFlag) return;
-    
-    var minX = firePosition[0] - fireRadius;
-    var maxX = firePosition[0] + fireRadius;
-    var minY = firePosition[1] - fireRadius;
-    var maxY = firePosition[1] + fireRadius;
-
-    if (fires.length == 0) {
+    if (ilFuoco[0].scale.x < 0.2) {
         vittoria = true;
         return;
     }
-    if(fires.length > 1000){
+    if(ilFuoco[0].scale.x > 30){
         return;
     }
-    
-    fireRadius = fireRadius + fireSpeed;
-    /*
-    for(var i = 0; i < fireSpeed/4; i++){
-        var posizioneX;
-        var posizioneY;
-        var fire1 = fires[0].clone();
-        var fire2 = fires[1].clone();
-        var fire3 = fires[2].clone();
-        var fire4 = fires[3].clone();
-
-        var scale = Math.floor(Math.random() * (3 - 1)) + 1;
-        fire1.scale.set(scale, scale, scale);
-        fire2.scale.set(scale, scale, scale);
-        fire3.scale.set(scale, scale, scale);
-        fire4.scale.set(scale, scale, scale);
-
-
-        if(fireSpeed%2){
-            fire1.rotation.y = Math.PI/4;
-            fire2.rotation.y = 3*Math.PI/4;
-            fire3.rotation.y = 5*Math.PI/4;
-            fire4.rotation.y = 7*Math.PI/4;
-        }
-
-        do{
-            posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
-            posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
-
-        }while((posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY)) ||
-            !posizione_sopra_fuoco(posizioneX, posizioneY));
-        fire1.position.set(posizioneX, 220, posizioneY);
-        fire2.position.set(posizioneX, 220, posizioneY);
-        fire3.position.set(posizioneX, 220, posizioneY);
-        fire4.position.set(posizioneX, 220, posizioneY);
-        fires.push(fire1);
-        fires.push(fire2);
-        fires.push(fire3);
-        fires.push(fire4);
-        scene.add(fire1);
-        scene.add(fire2);
-        scene.add(fire3);
-        scene.add(fire4);
-    }
-*/
+    fireScale = fireScale + fireSpeed;
+    for(var i = 0; i < ilFuoco.length; i++){
+        ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
+        ilFuoco[i].position.set(firePosition[0], 110*fireScale, firePosition[1]);
+    }  
 }
 
 function fire_extinguish(quanto){
-    if(quanto >= fires.length){
+    if(quanto >= fireScale - 0.2){
         vittoria = true;
+        console.log("HAI VINTO");
         return;
     }
-    for(var i = fires.length; i > fires.length-(quanto*4); i--){
-        scene.remove(fires[i]);
-        fires.pop(i);
+    fireScale = fireScale - quanto;
+    for(var i = 0; i < ilFuoco.length; i++){
+        ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
+        ilFuoco[i].position.set(firePosition[0], 110*fireScale, firePosition[1]);
     }
 }
 
