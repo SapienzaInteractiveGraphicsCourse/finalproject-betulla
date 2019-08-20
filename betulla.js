@@ -442,7 +442,7 @@ function init() {
             firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
             firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
         }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
-
+    firePosition = [-2000,-1000];
     var params = {
         color1: '#ffffff',
         color2: '#ffa000',
@@ -461,7 +461,7 @@ function init() {
         massConservation: false
     };
     var plane = new THREE.PlaneBufferGeometry( 512, 512 );
-    fire = new Fire( plane, {
+    var fire = new Fire( plane, {
         textureWidth: 512,
         textureHeight: 512,
         debug: false
@@ -470,21 +470,21 @@ function init() {
     fire.scale.set(2,2,2);
     scene.add( fire );
     fires.push(fire);
-    fire = fire.clone()
-    fire.rotation.y = Math.PI/2;
-    fire.scale.set(2,2,2);
-    scene.add( fire );
-    fires.push(fire);
-    fire = fire.clone()
-    fire.rotation.y = Math.PI;
-    fire.scale.set(2,2,2);
-    scene.add( fire );
-    fires.push(fire);
-    fire = fire.clone()
-    fire.rotation.y = 3.1241;
-    fire.scale.set(2,2,2);
-    scene.add( fire );
-    fires.push(fire);
+    var fire1 = fire.clone()
+    fire1.rotation.y = Math.PI/2;
+    fire1.scale.set(2,2,2);
+    scene.add( fire1 );
+    fires.push(fire1);
+    var fire2 = fire.clone()
+    fire2.rotation.y = Math.PI;
+    fire2.scale.set(2,2,2);
+    scene.add( fire2 );
+    fires.push(fire2);
+    var fire3 = fire.clone()
+    fire3.rotation.y = 3.1241;
+    fire3.scale.set(2,2,2);
+    scene.add( fire3 );
+    fires.push(fire3);
     setInterval(fire_expansion, fireInterval);
 
     function updateAll() {
@@ -1649,13 +1649,12 @@ function render_airport(){
 }
 
 function fire_expansion(){
+    if (!playFlag) return;
+    
     var minX = firePosition[0] - fireRadius;
     var maxX = firePosition[0] + fireRadius;
     var minY = firePosition[1] - fireRadius;
     var maxY = firePosition[1] + fireRadius;
-    console.log(fires.length);
-    console.log(firePosition);
-    if (!playFlag) return;
 
     if (fires.length == 0) {
         vittoria = true;
@@ -1664,19 +1663,23 @@ function fire_expansion(){
     if(fires.length > 1000){
         return;
     }
+    
     fireRadius = fireRadius + fireSpeed;
-    for(var i = 0; i < fireSpeed/2; i++){
+    /*
+    for(var i = 0; i < fireSpeed/4; i++){
         var posizioneX;
         var posizioneY;
         var fire1 = fires[0].clone();
         var fire2 = fires[1].clone();
         var fire3 = fires[2].clone();
         var fire4 = fires[3].clone();
+
         var scale = Math.floor(Math.random() * (3 - 1)) + 1;
         fire1.scale.set(scale, scale, scale);
         fire2.scale.set(scale, scale, scale);
         fire3.scale.set(scale, scale, scale);
         fire4.scale.set(scale, scale, scale);
+
 
         if(fireSpeed%2){
             fire1.rotation.y = Math.PI/4;
@@ -1684,14 +1687,13 @@ function fire_expansion(){
             fire3.rotation.y = 5*Math.PI/4;
             fire4.rotation.y = 7*Math.PI/4;
         }
+
         do{
             posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
             posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
 
-        }while((posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY)) &&
+        }while((posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY)) ||
             !posizione_sopra_fuoco(posizioneX, posizioneY));
-        console.log("MARCELLOOOOOOOOOOOOO");
-        console.log(posizioneX+" "+posizioneY);
         fire1.position.set(posizioneX, 220, posizioneY);
         fire2.position.set(posizioneX, 220, posizioneY);
         fire3.position.set(posizioneX, 220, posizioneY);
@@ -1700,7 +1702,12 @@ function fire_expansion(){
         fires.push(fire2);
         fires.push(fire3);
         fires.push(fire4);
+        scene.add(fire1);
+        scene.add(fire2);
+        scene.add(fire3);
+        scene.add(fire4);
     }
+*/
 }
 
 function fire_extinguish(quanto){
