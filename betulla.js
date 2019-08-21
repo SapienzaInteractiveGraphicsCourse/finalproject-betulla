@@ -19,62 +19,23 @@ const min_y_area= -10000;
 var firePosition = [0,0];
 var fireScale, fireSpeed, fireInterval;
 var ilFuoco = [];
-var fireParams = {
-        color1: '#ffffff',
+var params = {
+        color1: '#e67f0b',
         color2: '#ffa000',
         color3: '#000000',
-        colorBias: 0.8,
-        burnRate: 0.63,
-        diffuse: 4.33,
-        viscosity: 0.26,
-        expansion: - 0.17,
-        swirl: 43.79,
-        drag: 0.07,
+        colorBias: 0.99,
+        burnRate: 1.82,
+        diffuse: 2.86,
+        viscosity: 2.64,
+        expansion: 0.75,
+        swirl: 50,
+        drag: 0.20,
         airSpeed: 12.0,
         windX: 0.0,
         windY: 0.75,
-        speed: 500.0,
+        speed: 366,
         massConservation: false
     };
-
-function updateAll(fire) {
-    fire.color1.set( fireParams.color1 );
-    fire.color2.set( fireParams.color2 );
-    fire.color3.set( fireParams.color3 );
-    fire.colorBias = fireParams.colorBias;
-    fire.burnRate = fireParams.burnRate;
-    fire.diffuse = fireParams.diffuse;
-    fire.viscosity = fireParams.viscosity;
-    fire.expansion = fireParams.expansion;
-    fire.swirl = fireParams.swirl;
-    fire.drag = fireParams.drag;
-    fire.airSpeed = fireParams.airSpeed;
-    fire.windVector.x = fireParams.windX;
-    fire.windVector.y = fireParams.windY;
-    fire.speed = fireParams.speed;
-    fire.massConservation = fireParams.massConservation;
-    fire.clearSources();
-    fire.addSource( 0.5, 0.1, 0.1, 1.0, 0.0, 1.0 );
-}
-
-fireParams.Campfire = function (fire) {
-    fireParams.color1 = '#ffffff';
-    fireParams.color2 = '#ffa000';
-    fireParams.color3 = '#000000';
-    fireParams.colorBias =  0.8;
-    fireParams.burnRate = 0.63;
-    fireParams.diffuse =4.33;
-    fireParams.viscosity = 0.26;
-    fireParams.expansion = - 0.17;
-    fireParams.swirl = 43.79;
-    fireParams.drag = 0.07;
-    fireParams.airSpeed = 12.0;
-    fireParams.windX = 0.0;
-    fireParams.windY = 0.05;
-    fireParams.speed = 500.0;
-    fireParams.massConservation = false;
-    updateAll(fire);
-};
 
 var renderRadius = 3000;
 
@@ -541,7 +502,7 @@ function init() {
         textureHeight: 512,
         debug: false
     } );
-    fire.position.set(firePosition[0], 150*fireScale, firePosition[1]);
+    fire.position.set(firePosition[0], 50*fireScale, firePosition[1]);
     fire.scale.set(fireScale, fireScale, fireScale);
     scene.add( fire );
     ilFuoco.push(fire);
@@ -560,6 +521,98 @@ function init() {
     fire3.rotation.y = 3.1241;
     scene.add( fire3 );
     ilFuoco.push(fire3);
+
+    function updateColor1( value ) {
+        fire.color1.set( value );
+    }
+    function updateColor2( value ) {
+        fire.color2.set( value );
+    }
+    function updateColor3( value ) {
+        fire.color3.set( value );
+    }
+    function updateColorBias( value ) {
+        fire.colorBias = value;
+    }
+    function updateBurnRate( value ) {
+        fire.burnRate = value;
+    }
+    function updateDiffuse( value ) {
+        fire.diffuse = value;
+    }
+    function updateViscosity( value ) {
+        fire.viscosity = value;
+    }
+    function updateExpansion( value ) {
+        fire.expansion = value;
+    }
+    function updateSwirl( value ) {
+        fire.swirl = value;
+    }
+    function updateDrag( value ) {
+        fire.drag = value;
+    }
+    function updateAirSpeed( value ) {
+        fire.airSpeed = value;
+    }
+    function updateWindX( value ) {
+        fire.windVector.x = value;
+    }
+    function updateWindY( value ) {
+        fire.windVector.y = value;
+    }
+    function updateSpeed( value ) {
+        fire.speed = value;
+    }
+    function updateMassConservation( value ) {
+        fire.massConservation = value;
+    }
+    params.Single = function () {
+        fire.clearSources();
+        fire.addSource( 0.5, 0.1, 0.1, 1.0, 0.0, 1.0 );
+    };
+    params.Multiple = function () {
+        fire.clearSources();
+        fire.addSource( 0.45, 0.1, 0.1, 0.5, 0.0, 1.0 );
+        fire.addSource( 0.55, 0.1, 0.1, 0.5, 0.0, 1.0 );
+    };
+
+    function updateAll() {
+        updateColor1( params.color1 );
+        updateColor2( params.color2 );
+        updateColor3( params.color3 );
+        updateColorBias( params.colorBias );
+        updateBurnRate( params.burnRate );
+        updateDiffuse( params.diffuse );
+        updateViscosity( params.viscosity );
+        updateExpansion( params.expansion );
+        updateSwirl( params.swirl );
+        updateDrag( params.drag );
+        updateAirSpeed( params.airSpeed );
+        updateWindX( params.windX );
+        updateWindY( params.windY );
+        updateSpeed( params.speed );
+        updateMassConservation( params.massConservation );
+    }
+
+    params.Campfire = function () {
+        params.color1 = 0xe6400d;
+        params.color2 = 0xffa000;
+        params.color3 = 0x000000;
+        params.colorBias = 1.0;
+        params.burnRate = 2.15;
+        params.diffuse = 1.72;
+        params.viscosity = 0.25;
+        params.expansion = 0.86;
+        params.swirl = 50.0;
+        params.drag = 0.29;
+        params.airSpeed = 12.0;
+        params.windX = 0.0;
+        params.windY = 1.37
+        params.speed = 270.0;
+        params.massConservation = false;
+        updateAll();
+    };
 /*
     var fire4 = fire.clone()
     fire4.rotation.y = Math.PI/4;
@@ -581,16 +634,16 @@ function init() {
     scene.add( fire7 );
     ilFuoco.push(fire7);
 */
+    params.Campfire();
+    params.Multiple();    
     setInterval(fire_expansion, fireInterval);
-
-    fireParams.Campfire(fire);
 
     //create water particles
     defineParticles ();
 
     // LIGHTS
     light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-    light.position.set( 0, 1000000, 0 );
+    light.position.set( 0, 100, 0 );
     scene.add( light );
 
     dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
@@ -1453,7 +1506,7 @@ function defineParticles ()
     particleTex.wrapS = particleTex.wrapT = THREE.RepeatWrapping;
     particleTex.repeat.set (1, 1);
 
-    pMaterial = new THREE.PointCloudMaterial
+    pMaterial = new THREE.PointsMaterial
     ({
         color: 0x3399ff, /* Blue-like colour.  */
         map: particleTex, /* Texture.  */
@@ -1491,7 +1544,7 @@ function defineParticles ()
         time[p].start ();
     }
 
-    particleSys = new THREE.PointCloud (pGeometry ,pMaterial);
+    particleSys = new THREE.Points(pGeometry ,pMaterial);
     particleSys.sortParticles = true;
     particleSys.visible = false; /* Inherited from Object3D.  */
 }
@@ -1747,7 +1800,7 @@ function fire_expansion(){
     fireScale = fireScale + fireSpeed;
     for(var i = 0; i < ilFuoco.length; i++){
         ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
-        ilFuoco[i].position.set(firePosition[0], 110*fireScale, firePosition[1]);
+        ilFuoco[i].position.set(firePosition[0], 50*fireScale, firePosition[1]);
     }  
 }
 
@@ -1755,7 +1808,7 @@ function fire_extinguish(quanto){
     fireScale = fireScale - quanto;
     for(var i = 0; i < ilFuoco.length; i++){
         ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
-        ilFuoco[i].position.set(firePosition[0], 110*fireScale, firePosition[1]);
+        ilFuoco[i].position.set(firePosition[0], 50*fireScale, firePosition[1]);
     }
     if(quanto >= fireScale - 0.2)
         vittoria = true;
