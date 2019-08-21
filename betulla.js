@@ -79,6 +79,7 @@ fireParams.Campfire = function (fire) {
 var renderRadius = 3000;
 
 var trees = [];
+var burnedTree = [];
 
 var aeroporto = [];
 var aeroportoRenderizzato = true;
@@ -282,7 +283,6 @@ function init() {
 
             });
             model.add( camera );
-            model.add(worldAxis);
             model.add( particleSys );
             scene.add( model );
         },
@@ -507,11 +507,28 @@ function init() {
             console.log( 'An error happened' );
         });
 
+    GLTFloader.load('Models/albero_bruciato_1/scene.gltf', function ( gltf ) {
+            tree = gltf.scene;
+            tree.scale.set(4, 4, 4);
+            for(var i = 0; i < 50; i++){
+                tree = tree.clone();
+                burnedTree.push(tree);
+            }
+        },
+        // called while loading is progressing
+        function ( xhr ) {
+            console.log( ( xhr.loaded / xhr.total * 100 ) + '% loaded' );
+        },
+        // called when loading has errors
+        function ( error ) {
+            console.log( 'An error happened' );
+        });
+
     //fire
-    maxX = 15000;
-    minX = -15000;
-    maxY = 15000;
-    minY = -15000;
+    maxX = max_x_area -3000;
+    minX = min_x_area -3000;
+    maxY = max_y_area - 3000;
+    minY = min_y_area -3000;
     do{
             firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
             firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
@@ -1679,8 +1696,14 @@ function update_trees(){
             scene.remove(trees[i]);
         }
         else{
-            trees[i].position.set(posizioneX, 0, posizioneY);
-            scene.add(trees[i]);
+            if(posizione_sopra_fuoco(posizioneX, posizioneY)){
+                burnedTree[i%100].position.set(posizioneX, 30, posizioneY);
+                scene.add(burnedTree[i%100]);
+            }
+            else{
+                trees[i].position.set(posizioneX, 0, posizioneY);
+                scene.add(trees[i]);
+            }
         }
     }
 }
