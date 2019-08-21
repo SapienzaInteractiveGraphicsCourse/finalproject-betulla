@@ -485,9 +485,9 @@ function init() {
     });
 
     //load trees models
-    var treeNum = 700;
+    var treeNum = 500;
     if(light_mode)
-        treeNum = 300;
+        treeNum = 200;
     GLTFloader.load('Models/trees/pine_tree_single_01/scene.gltf', function ( gltf ) {
             tree = gltf.scene;
             tree.scale.set(0.08, 0.08, 0.08);
@@ -510,10 +510,11 @@ function init() {
     GLTFloader.load('Models/albero_bruciato_1/scene.gltf', function ( gltf ) {
             tree = gltf.scene;
             tree.scale.set(4, 4, 4);
-            for(var i = 0; i < 50; i++){
+            for(var i = 0; i < 30; i++){
                 tree = tree.clone();
                 burnedTree.push(tree);
             }
+            setInterval(update_burned_tree,2500);
         },
         // called while loading is progressing
         function ( xhr ) {
@@ -526,9 +527,9 @@ function init() {
 
     //fire
     maxX = max_x_area -3000;
-    minX = min_x_area -3000;
+    minX = min_x_area +3000;
     maxY = max_y_area - 3000;
-    minY = min_y_area -3000;
+    minY = min_y_area +3000;
     do{
             firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
             firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
@@ -1157,7 +1158,7 @@ function onDocumentKeyDown(event) {
                         + Math.pow(model.position.z - firePosition[1],2));
                     var quanto = 7 - Math.abs(distanzaDaFuoco)/100;
                     if(quanto < 0)
-                        quanto = 1;
+                        quanto = 2;
                     fire_extinguish(quanto);
                 }
             } else if (onLake && !emptyingTank) {
@@ -1302,6 +1303,15 @@ function reset_var(){
     clearInterval(reset_attitude);
     clearInterval(close_doors_ant);
     clearInterval(close_doors_back);
+
+    if(difficulty === "Hard")
+        fireScale = 10;
+    else if(difficulty === "Normal")
+        fireScale = 5;
+    else if(difficulty === "Easy")
+        fireScale = 5;
+    else
+        fireScale = 2;
 
     pauseInterval=0;
     playFlag = false;
@@ -1627,7 +1637,7 @@ function posizione_sopra_acqua(posX, posY){
 
 function posizione_sopra_fuoco(posX, posY){
     if( (posX - firePosition[0]) * (posX - firePosition[0]) + 
-        (posY - firePosition[1]) * (posY - firePosition[1]) <= (100*fireScale) * (100*fireScale))
+        (posY - firePosition[1]) * (posY - firePosition[1]) <= (200*fireScale) * (200*fireScale))
         return true;
     return false;
 }
@@ -1691,18 +1701,58 @@ function update_trees(){
                 break;
             posizioneX = Math.floor(Math.random() * (maxX - minX)) + minX;
             posizioneY = Math.floor(Math.random() * (maxY - minY)) + minY;
-        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY));
+        }while(posizione_sopra_acqua(posizioneX, posizioneY) || posizione_sopra_aereoporto(posizioneX, posizioneY) 
+            || posizione_sopra_fuoco(posizioneX, posizioneY));
         if(j == 5){
             scene.remove(trees[i]);
         }
         else{
-            if(posizione_sopra_fuoco(posizioneX, posizioneY)){
-                burnedTree[i%100].position.set(posizioneX, 30, posizioneY);
-                scene.add(burnedTree[i%100]);
+            trees[i].position.set(posizioneX, 0, posizioneY);
+            scene.add(trees[i]);
+        }
+    }
+}
+function update_burned_tree(){
+    var posizioneAereoX = model.position.x;
+    var posizioneAereoY = model.position.z;
+    var minX = posizioneAereoX - renderRadius;
+    var maxX = posizioneAereoX + renderRadius;
+    var minY = posizioneAereoY - renderRadius;
+    var maxY = posizioneAereoY + renderRadius;
+    var fireRadius = 120 * fireScale;
+    var fireMinX = firePosition[0] - fireRadius;
+    var fireMaxX = firePosition[0] + fireRadius;
+    var fireMinY = firePosition[1] - fireRadius;
+    var fireMaxY = firePosition[1] + fireRadius;
+
+    for (var i = 0; i < burnedTree.length; i++){
+        if((!burnedTree[i].position.x < maxX && burnedTree[i].position.x > minX)
+            || !(burnedTree[i].position.y < maxY && burnedTree[i].position.y > minY)){
+            scene.remove(burnedTree[i]);
+        }
+        if(posizione_sopra_fuoco(burnedTree[i].position.x, burnedTree[i].position.z)){
+            scene.add(burnedTree[i]);
+            continue;
+        }
+        if(firePosition[0] < maxX && firePosition[0] > minX 
+            && firePosition[1] < maxY && firePosition[1] > minY ){
+            var posizioneX = 0;
+            var posizioneY = 0;
+            var j = 0;
+            do{
+                j++;
+                if(j == 5)
+                break;
+                posizioneX = Math.floor(Math.random() * (fireMaxX - fireMinX)) + fireMinX;
+                posizioneY = Math.floor(Math.random() * (fireMaxY - fireMinY)) + fireMinY;
+            }while(!posizione_sopra_fuoco(posizioneX, posizioneY) && posizione_sopra_aereoporto (posizioneX, posizioneY)
+                && posizione_sopra_acqua(posizioneX, posizioneX));
+            if(j == 5){
+                scene.remove(trees[i]);
             }
             else{
-                trees[i].position.set(posizioneX, 0, posizioneY);
-                scene.add(trees[i]);
+                burnedTree[i].position.set(posizioneX, 30, posizioneY);
+                scene.add(burnedTree[i]);
             }
         }
     }
@@ -1742,15 +1792,13 @@ function fire_expansion(){
 }
 
 function fire_extinguish(quanto){
-    if(quanto >= fireScale - 0.2){
-        vittoria = true;
-        return;
-    }
     fireScale = fireScale - quanto;
     for(var i = 0; i < ilFuoco.length; i++){
         ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
         ilFuoco[i].position.set(firePosition[0], 110*fireScale, firePosition[1]);
     }
+    if(quanto >= fireScale - 0.2)
+        vittoria = true;
 }
 
 //Fire
