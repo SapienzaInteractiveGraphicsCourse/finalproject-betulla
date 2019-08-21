@@ -718,7 +718,6 @@ var ground = true; // variabile true se sono a terra (diventa false appena si su
 var vel = 0; // velocità
 var height = 0; // quota
 var flag = true; // flag per impendire che venga chiamato SetInterval(reset_attitude) più volte durante l'esecuzione della funzione
-var flag_motors = false; // variabile per far eseguire le funzioni SetInterval(motion) e SetInterval(manage_velocity) solo una volta
 var tank = false; // variabile true se il serbatoio è pieno, false altrimenti
 var onLake = false; // variabile true se sto sul lago, false altrimenti
 var fire = false; // variabile true se sono vicino all'incendio, false altrimenti
@@ -726,7 +725,6 @@ var emptyingTank=false; //true se si sta svuotando serbatoio
 var roll = 0; // angolo di rollio
 var pitch = 0; // angolo di beccheggio
 var vec = new THREE.Vector3(0,1,0);
-var stalled = false;
 
 
 function go_motors() {
@@ -878,39 +876,37 @@ function close_doors_back() {
 
 function reset_attitude() {
 
-    if (!stalled) {
-        if (roll > 0 && roll < 0.5) {
-            model.rotateX(-Math.PI*roll/300);
-            roll -= 180*roll/300;
-        }
-        else if (roll > -0.5 && roll < 0) {
-            model.rotateX(Math.PI*roll/300);
-            roll += 180*roll/300;
-        }
-        else if (roll > 0) {
-            model.rotateX(-Math.PI/200);
-            roll -= 180/200;
-        }
-        else if (roll < 0) {
-            model.rotateX(Math.PI/200);
-            roll += 180/200;
-        }
-        if (pitch > 0 && pitch < 0.5) {
-            model.rotateZ(-Math.PI*pitch/300);
-            pitch -= 180*pitch/300;
-        }
-        else if (pitch > -0.5 && pitch < 0) {
-            model.rotateZ(-Math.PI*pitch/300);
-            pitch -= 180*pitch/300;
-        }
-        else if (pitch > 0) {
-            model.rotateZ(-Math.PI/200);
-            pitch -= 180/200;
-        }
-        else if (pitch < 0) {
-            model.rotateZ(Math.PI/200);
-            pitch += 180/200;
-        }
+    if (roll > 0 && roll < 0.5) {
+        model.rotateX(-Math.PI*roll/300);
+        roll -= 180*roll/300;
+    }
+    else if (roll > -0.5 && roll < 0) {
+        model.rotateX(Math.PI*roll/300);
+        roll += 180*roll/300;
+    }
+    else if (roll > 0) {
+        model.rotateX(-Math.PI/200);
+        roll -= 180/200;
+    }
+    else if (roll < 0) {
+        model.rotateX(Math.PI/200);
+        roll += 180/200;
+    }
+    if (pitch > 0 && pitch < 0.5) {
+        model.rotateZ(-Math.PI*pitch/300);
+        pitch -= 180*pitch/300;
+    }
+    else if (pitch > -0.5 && pitch < 0) {
+        model.rotateZ(-Math.PI*pitch/300);
+        pitch -= 180*pitch/300;
+    }
+    else if (pitch > 0) {
+        model.rotateZ(-Math.PI/200);
+        pitch -= 180/200;
+    }
+    else if (pitch < 0) {
+        model.rotateZ(Math.PI/200);
+        pitch += 180/200;
     }
 
 }
@@ -964,17 +960,7 @@ function manage_velocity() {
 
     if (!playFlag) return;
 
-    if (motors == 0) if (vel > 0) vel -= 0.5; // se i motori sono spenti, decelera di 0.5
-    if (vel < 150) {
-        if (ground && motors > 0) vel += 1.2;
-        if (motors != 0 && !ground) vel += 1;
-        if (!ground) {
-            stalled = true;
-            stall();
-        }
-        else stalled = false;
-    }
-    else stalled = false;
+    if (ground && motors > 0 && vel < 151) vel += 1.2;
     if (vel < 206+(Math.sin(pitch*Math.PI/180)*20) && motors > 1) vel += 0.67; // se la velocità è minore di 206 e i motori sono stettati a 2,3,4 o 5, accelera di 0.67
     else if (vel < 263+(Math.sin(pitch*Math.PI/180)*20) && motors > 2) vel += 0.5; // se la velocità è minore di 263 e i motori sono stettati a 3,4 o 5, accelera di 0.5
     else if (vel < 320+(Math.sin(pitch*Math.PI/180)*20) && motors > 3) vel += 0.5; // se la velocità è minore di 320 e i motori sono stettati a 4 o 5, accelera di 0.5
@@ -982,7 +968,8 @@ function manage_velocity() {
 
     // le accelerazioni sono scalate così da avere accelerazioni maggiori a velocità più basse
 
-    else if (vel > 320+(Math.sin(pitch*Math.PI/180)*20) && motors < 5) vel -= 0.5; // decelera se la velocità è maggiore della velocità relativa al livello del motore a cui ci si trova
+    else if (vel > 376+(Math.sin(pitch*Math.PI/180)*20)) vel -= 0.5; // decelera se la velocità è maggiore della velocità relativa al livello del motore a cui ci si trova
+    else if (vel > 320+(Math.sin(pitch*Math.PI/180)*20) && motors < 5) vel -= 0.5;
     else if (vel > 263+(Math.sin(pitch*Math.PI/180)*20) && motors < 4) vel -= 0.5;
     else if (vel > 206+(Math.sin(pitch*Math.PI/180)*20) && motors < 3) vel -= 0.5;
     else if (vel > 151+(Math.sin(pitch*Math.PI/180)*20) && motors < 2) vel -= 0.5;
@@ -991,27 +978,12 @@ function manage_velocity() {
 
 }
 
-function stall() {
-    if (pitch > 30) vel += pitch*0.1;
-
-    if (roll != 0) {
-        reset_attitude();
-    }
-    else if (pitch < 60) {
-        model.rotateZ(Math.PI / 300);
-        pitch += 180 / 300;
-    }
-
-    model.position.y += -0.1;
-}
-
 function messages() {
 
     exclamation = [ "Perfect!", "Well done!", "Good job!"];
 
     if (ground && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
     else if (ground && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
-    else if (stalled) message = "Oh no, you stalled! Recovers as much speed as possible [-hold B-] and pull up [hold down S]";
     else if (carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
@@ -1053,17 +1025,6 @@ function onDocumentKeyDown(event) {
                 engine = setInterval(go_motors, 1);
                 //sound on
                 motor_sound.sound.play();
-            } else {
-                motors = 0;
-                speed_helic = 0;
-                clearInterval(engine);
-                //sound off
-                motor_sound.sound.pause();
-                motor_sound.sound.currentTime = 0;
-                motor_sound.sound.playbackRate = 1;
-            }
-            if (!flag_motors) {
-                flag_motors = true;
                 setInterval(motion, 1);
                 setInterval(manage_velocity, 40);
             }
@@ -1094,7 +1055,7 @@ function onDocumentKeyDown(event) {
             break;
 
         case 65: // a
-            if (pitch < 0.05 && pitch > -0.05 && roll <= 90 && !ground && !stalled && !emptyingTank && !onLake) {
+            if (pitch < 0.05 && pitch > -0.05 && roll <= 90 && !ground && !emptyingTank && !onLake) {
                 clearInterval(reset);
                 flag = false;
                 model.rotateX(Math.PI / 300);
@@ -1103,7 +1064,7 @@ function onDocumentKeyDown(event) {
             break;
 
         case 68: // d
-            if (pitch < 0.05 && pitch > -0.05 && roll >= -90 && !ground && !stalled && !emptyingTank && !onLake) {
+            if (pitch < 0.05 && pitch > -0.05 && roll >= -90 && !ground && !emptyingTank && !onLake) {
                 clearInterval(reset);
                 flag = false;
                 model.rotateX(-Math.PI / 300);
@@ -1121,7 +1082,7 @@ function onDocumentKeyDown(event) {
             break;
 
         case 83: // s
-            if (roll < 0.05 && roll > -0.05 && pitch >= -60 && (!stalled || vel > 150) && !emptyingTank && (!ground || vel > 150)) {
+            if (roll < 0.05 && roll > -0.05 && pitch >= -60 && ((motors > 1 || pitch >= 0) && vel >= 180) && !emptyingTank && (!ground || vel > 150)) {
                 clearInterval(reset);
                 flag = false;
                 model.rotateZ(-Math.PI / 400);
@@ -1321,7 +1282,6 @@ function reset_var(){
     vel = 0;
     height = 0;
     flag = true;
-    flag_motors = false;
     tank = false;
     onLake = false;
     fire = false;
