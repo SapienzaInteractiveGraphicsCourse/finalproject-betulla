@@ -11,6 +11,10 @@ var first_time = true;
 
 var waterPosition = [-15000, 6000];
 var waterRadius = 12500;
+const max_x_area= 20000;
+const min_x_area= -20000;
+const max_y_area= 10000;
+const min_y_area= -10000;
 
 var firePosition = [0,0];
 var fireScale, fireSpeed, fireInterval;
@@ -73,15 +77,11 @@ fireParams.Campfire = function (fire) {
 };
 
 var renderRadius = 3000;
-var oggettiCaricati = 0;
 
 var trees = [];
 
 var aeroporto = [];
 var aeroportoRenderizzato = true;
-
-var texLoader = new THREE.TextureLoader();
-var GLTFloader = new THREE.GLTFLoader();
 
 var clock, startTime, pauseClock, pauseTime, waterClock;
 var pauseInterval=0; //intervallo di tempo passato in pausa
@@ -106,17 +106,44 @@ cart_soundFlag=false;
 var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
 var message_gameOver = "";
 
+const loadingManager = new THREE.LoadingManager( () => {
+    
+        const loadingScreen = document.getElementById( 'loading-screen' );
+        loadingScreen.classList.add( 'fade-out' );
+        loadingScreen.style.display = "none";
+        loadingScreen.classList.remove( 'fade-out' );
+
+        menu_music.muted = true;
+        
+        //show game window
+        document.getElementById('game_id').style.display = 'block';
+
+        playFlag = true;
+        animate();
+        setInterval(messages, 1000);
+        startTime=clock.getElapsedTime();
+        
+        // optional: remove loader from DOM via event listener
+        loadingScreen.addEventListener( 'transitionend', onTransitionEnd );
+        
+} );
+
+function onTransitionEnd( event ) {
+    event.target.remove();   
+}
+
+const texLoader = new THREE.TextureLoader(loadingManager);
+const GLTFloader = new THREE.GLTFLoader(loadingManager);
 
 function start_game() {
-    menu_music.muted = true;
+    document.getElementById('loading-screen').style.display = "block";
     if (first_time) {
         init();
         first_time=false;
     }
-    else partial_init();
-    playFlag = true;
-    animate();
-    setInterval(messages, 1000);
+    else {
+        partial_init();
+    }
 }
 
 function modal(my_modal) {
@@ -127,11 +154,12 @@ function modal(my_modal) {
     modal.style.display = "block";
 
     span.onclick = function() {
-        if (my_modal!="myModal_5") modal.style.display = "none";
+        if (my_modal!="myModal_5" || my_modal!="myModal_6" ) 
+            modal.style.display = "none";
     }
 
     window.onclick = function(event) {
-        if (event.target == modal && my_modal!="myModal_5") {
+        if (event.target == modal && my_modal!="myModal_5" && my_modal!="myModal_6" ) {
             if (my_modal=="myModal_3" ||my_modal=="myModal_4") play_pause();
             modal.style.display = "none";
         }
@@ -202,7 +230,6 @@ function init() {
                 canadair3.scale.set(1, 1, 1);
                 canadair3.rotation.y = -Math.PI *0.5;
                 scene.add(canadair3);
-                oggettiCaricati += 1;
                 aeroporto.push(canadair2);
                 aeroporto.push(canadair3);
             }
@@ -255,7 +282,6 @@ function init() {
 
             });
             model.add( camera );
-            var worldAxis = new THREE.AxesHelper(20);
             model.add(worldAxis);
             model.add( particleSys );
             scene.add( model );
@@ -285,7 +311,6 @@ function init() {
         groundMaterial.map = map;
         groundMaterial.needsUpdate = true;
     } );
-    oggettiCaricati += 1;
 
     // lake
     var lakeGeometry = new THREE.CircleGeometry( waterRadius, 64 );
@@ -294,7 +319,6 @@ function init() {
     lake.rotation.x = Math.PI * - 0.5;
     lake.position.set(waterPosition[0], 2, waterPosition[1]);
     scene.add( lake );
-    oggettiCaricati += 1;
 
     //load grass
     if(!light_mode){
@@ -324,7 +348,6 @@ function init() {
                     grassLine[i].position.set(-(i-12)*70, 0, -40);
                     scene.add( grassLine[i] );
                 }
-                oggettiCaricati += 1;
                 //scene.add( grass );
             },
             // called while loading is progressing
@@ -356,7 +379,6 @@ function init() {
                 scene.add( street );
                 aeroporto.push(street);
             }
-            oggettiCaricati += 1;
         },
         // called while loading is progressing
         function ( xhr ) {
@@ -374,7 +396,6 @@ function init() {
                 tower.position.set(-600, 0, -60);
                 tower.scale.set(0.2, 0.2, 0.2);
                 scene.add( tower );
-                oggettiCaricati += 1;
                 aeroporto.push(tower);
             },
             // called while loading is progressing
@@ -414,7 +435,6 @@ function init() {
                 hangar4.position.set(-250, 0, 60);
                 hangar4.scale.set(3, 3, 3);
                 scene.add(hangar4);
-                oggettiCaricati += 1;
                 aeroporto.push(hangar);
                 aeroporto.push(hangar1);
                 aeroporto.push(hangar2);
@@ -457,7 +477,6 @@ function init() {
             mesh2.position.set(-300, -5, 60);
             mesh2.scale.set(1, 1, 1);
             scene.add(mesh2);
-            oggettiCaricati += 1;
             aeroporto.push(mesh);
             aeroporto.push(mesh1);
             aeroporto.push(mesh2);
@@ -476,7 +495,6 @@ function init() {
                 tree = tree.clone();
                 trees.push(tree);
             }
-            oggettiCaricati += 1;
             render_trees(0, 0);
             setInterval(update_trees,1000);
         },
@@ -600,14 +618,10 @@ function init() {
 
     window.addEventListener( 'resize', onWindowResize, false );
 
-    //show game window
-    document.getElementById('game_id').style.display = 'block';
-
     game_scene_div = document.getElementById('game_id');
     game_scene_div.appendChild(renderer.domElement);
 
     canvas = document.getElementsByTagName("canvas")[0].setAttribute("id", "canvas_id");
-    startTime=clock.getElapsedTime();
 }
 
 function onWindowResize() {
@@ -632,6 +646,8 @@ function animate() {
         document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
         document.getElementById('conversation').innerHTML = "Camil: " + message;
 
+        if (vittoria) modal("myModal_6");
+
         if (!ground){
             let r = roll.toFixed(0);
             let p = pitch.toFixed(0);
@@ -641,13 +657,17 @@ function animate() {
             }
         }
 
-        if (height>800 || (height < 1 && !ground) || (carrello && onLake) || !ground && !onLake && height<4 && vel>0) {
-            if (height > 800) message_gameOver = "You've exceeded the 800-metre limit";
-            else if (height < 1 && !ground) message_gameOver = "You crashed";
-            else if (carrello && onLake) message_gameOver = "The wheels hit the lake and crashed you";
-            else if (!ground && !onLake && height < 4 && vel > 0) message_gameOver = "You crashed";
-            game_over_menu();
-        }
+        if (height > 800) 
+            game_over_menu("You've exceeded the 800-metre limit!");
+        else if (model.position.x<min_x_area || model.position.x>max_x_area || model.position.z>max_y_area || model.position.z<min_y_area) 
+            game_over_menu("You've gone too far!");
+        else if (!posizione_sopra_acqua(model.position.x, model.position.z) && !ground && (( height < 4 && vel > 0) || 
+            (height < 1)))
+            game_over_menu("You crashed on the ground!");
+        else if (posizione_sopra_acqua(model.position.x, model.position.z) && height < 1) 
+            game_over_menu("You crashed in the lake!");
+        else if (carrello && onLake) 
+            game_over_menu("The wheels hit the lake and crashed you!");
 
         if (onLake && height > height_difficulty) {
             onLake = false;
@@ -978,9 +998,11 @@ function messages() {
     else if (carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
+    else if (model.position.x<(min_x_area+3000) || model.position.x>(max_x_area-3000) || 
+        model.position.z>(max_y_area-3000) || model.position.z<(min_y_area+3000)) message="You are going too far! Come back or you will fail your mission!"
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
-    else if (height < 70 && !posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
-    else if (!onLake && !tank && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Descend to an altitude of at least " + height_difficulty + " meters to be able to fill the tank";
+    else if (height < 90 && !posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
+    else if (!onLake && !tank && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Descend to an altitude of at least " + (height_difficulty-3.3) + " meters to be able to fill the tank";
     else if (onLake && !tank) message = "All right, fill the tank [-press spacebar-].";
     else if (onLake && tank) message = "Perfect, now gain some altitude and go to the fire.";
     else if (!tank) message = "Ok, now go to the lake to fill the tank!";
@@ -1217,10 +1239,11 @@ function play_pause() {
     }
 }
 
-function game_over_menu(){ //to call when gameover
+function game_over_menu(message){ //to call when gameover
     playFlag = false;
     motor_sound.sound.pause();
     cart_sound.sound.pause();
+    document.getElementById("gameover_msg").innerHTML= message;
     modal("myModal_5");
     if (volume) gameover_sound.sound.play();
 }
@@ -1293,6 +1316,9 @@ function reset_var(){
 
     particles = [];
     time = [];
+
+    //hide game window during loading
+    document.getElementById('game_id').style.display = 'none';
 
     //svuotata barra tank
     document.getElementById("tankBar").style.width = "0%";
@@ -1403,13 +1429,8 @@ function partial_init(){
     //create water particles
     defineParticles();
 
-    //show game window
-    document.getElementById('game_id').style.display = 'block';
-
     game_scene_div = document.getElementById('game_id');
     game_scene_div.appendChild(renderer.domElement);
-
-    startTime=clock.getElapsedTime();
 
 }
 
@@ -1700,7 +1721,6 @@ function fire_expansion(){
 function fire_extinguish(quanto){
     if(quanto >= fireScale - 0.2){
         vittoria = true;
-        console.log("HAI VINTO");
         return;
     }
     fireScale = fireScale - quanto;
