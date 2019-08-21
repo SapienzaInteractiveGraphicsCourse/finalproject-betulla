@@ -879,37 +879,37 @@ function close_doors_back() {
 function reset_attitude() {
 
     if (!stalled) {
-        if (roll > 0 && roll < 0.3) {
+        if (roll > 0 && roll < 0.5) {
             model.rotateX(-Math.PI*roll/300);
             roll -= 180*roll/300;
         }
-        else if (roll > -0.3 && roll < 0) {
+        else if (roll > -0.5 && roll < 0) {
             model.rotateX(Math.PI*roll/300);
             roll += 180*roll/300;
         }
         else if (roll > 0) {
-            model.rotateX(-Math.PI/300);
-            roll -= 180/300;
+            model.rotateX(-Math.PI/200);
+            roll -= 180/200;
         }
         else if (roll < 0) {
-            model.rotateX(Math.PI/300);
-            roll += 180/300;
+            model.rotateX(Math.PI/200);
+            roll += 180/200;
         }
-        if (pitch > 0 && pitch < 0.3) {
+        if (pitch > 0 && pitch < 0.5) {
             model.rotateZ(-Math.PI*pitch/300);
             pitch -= 180*pitch/300;
         }
-        else if (pitch > -0.3 && pitch < 0) {
+        else if (pitch > -0.5 && pitch < 0) {
             model.rotateZ(-Math.PI*pitch/300);
             pitch -= 180*pitch/300;
         }
         else if (pitch > 0) {
-            model.rotateZ(-Math.PI/300);
-            pitch -= 180/300;
+            model.rotateZ(-Math.PI/200);
+            pitch -= 180/200;
         }
         else if (pitch < 0) {
-            model.rotateZ(Math.PI/300);
-            pitch += 180/300;
+            model.rotateZ(Math.PI/200);
+            pitch += 180/200;
         }
     }
 
@@ -1097,8 +1097,8 @@ function onDocumentKeyDown(event) {
             if (pitch < 0.05 && pitch > -0.05 && roll <= 90 && !ground && !stalled && !emptyingTank && !onLake) {
                 clearInterval(reset);
                 flag = false;
-                model.rotateX(Math.PI / 400);
-                roll += 180 / 400;
+                model.rotateX(Math.PI / 300);
+                roll += 180 / 300;
             }
             break;
 
@@ -1106,8 +1106,8 @@ function onDocumentKeyDown(event) {
             if (pitch < 0.05 && pitch > -0.05 && roll >= -90 && !ground && !stalled && !emptyingTank && !onLake) {
                 clearInterval(reset);
                 flag = false;
-                model.rotateX(-Math.PI / 400);
-                roll -= 180 / 400;
+                model.rotateX(-Math.PI / 300);
+                roll -= 180 / 300;
             }
             break;
 
