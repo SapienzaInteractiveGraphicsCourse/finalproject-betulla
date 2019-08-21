@@ -486,15 +486,20 @@ function init() {
             console.log( 'An error happened' );
         });
 
-    //fire
-    maxX = max_x_area -3000;
-    minX = min_x_area +3000;
-    maxY = max_y_area - 3000;
-    minY = min_y_area +3000;
-    do{
-            firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
-            firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
-        }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
+    var fuoriAcqua = false;
+    while(!fuoriAcqua){
+        //fire
+        maxX = max_x_area -3000;
+        minX = min_x_area +3000;
+        maxY = max_y_area - 3000;
+        minY = min_y_area +3000;
+        do{
+                firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
+                firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
+            }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
+        if(Math.pow(firePosition[0] - waterPosition[0],2) + Math.pow(firePosition[1] - waterPosition[1],2) > waterRadius+2000)
+            fuoriAcqua = true;
+    }
 
     var plane = new THREE.PlaneBufferGeometry( 512, 512 );
     var fire = new Fire( plane, {
@@ -504,21 +509,22 @@ function init() {
     } );
     fire.position.set(firePosition[0], 50*fireScale, firePosition[1]);
     fire.scale.set(fireScale, fireScale, fireScale);
+    fire.rotation.y = Math.PI/4;
     scene.add( fire );
     ilFuoco.push(fire);
 
     var fire1 = fire.clone()
-    fire1.rotation.y = Math.PI/2;
+    fire1.rotation.y = 3*Math.PI/4;
     scene.add( fire1 );
     ilFuoco.push(fire1);
 
     var fire2 = fire.clone()
-    fire2.rotation.y = Math.PI;
+    fire2.rotation.y = 5*Math.PI/4;
     scene.add( fire2 );
     ilFuoco.push(fire2);
 
     var fire3 = fire.clone()
-    fire3.rotation.y = 3.1241;
+    fire3.rotation.y = 7*Math.PI/4;
     scene.add( fire3 );
     ilFuoco.push(fire3);
 
