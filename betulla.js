@@ -1,5 +1,3 @@
-var vittoria = false;
-
 var camera, scene, renderer;
 
 var playFlag = false; //false=menu/pausa, true=gioco attivo
@@ -796,15 +794,6 @@ function animate() {
         document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
         document.getElementById('conversation').innerHTML = "Camil: " + message;
 
-        if (vittoria) {
-        	play_pause();
-    	    document.getElementById("win_msg").innerHTML= "Your time is:"+compute_time(curTime);
-    	    modal("myModal_6");
-    	    if (volume) victory_sound.sound.play();
-        	fire_sound.setVolume=0;
-        	scene.remove(fire);
-        }
-
         if (!ground){
             let r = roll.toFixed(0);
             let p = pitch.toFixed(0);
@@ -1389,6 +1378,20 @@ function game_over_menu(message){ //to call when gameover
     if (volume) gameover_sound.sound.play();
 }
 
+function win_menu(){
+	for(var i = 0; i < ilFuoco.length; i++){
+        ilFuoco[i].scale.set(0, 0, 0);
+    }
+	playFlag = false;
+	motor_sound.sound.pause();
+	cart_sound.sound.pause();
+	water_sound.sound.pause();
+	fire_sound.setVolume(0);
+    document.getElementById("win_msg").innerHTML= "Your time is:"+compute_time(curTime);
+    modal("myModal_6");
+    if (volume) victory_sound.sound.play();	
+}
+
 function restart_game() {
     if (confirm("Are you sure?")) {
         document.getElementById("myModal_3").style.display = "none";
@@ -1428,15 +1431,6 @@ function reset_var(){
     clearInterval(close_doors_ant);
     clearInterval(close_doors_back);
 
-    if(difficulty === "Hard")
-        fireScale = 10;
-    else if(difficulty === "Normal")
-        fireScale = 5;
-    else if(difficulty === "Easy")
-        fireScale = 5;
-    else
-        fireScale = 2;
-
     pauseInterval=0;
     playFlag = false;
     motor_sound.sound.playbackRate=1;
@@ -1462,7 +1456,6 @@ function reset_var(){
     roll = 0;
     pitch = 0;
     aeroportoRenderizzato = true;
-    vittoria = false;
 
     particles = [];
     time = [];
@@ -1685,6 +1678,27 @@ function partial_init(){
 
     //create water particles
     defineParticles();
+
+    //fire
+    var fuoriAcqua = false;
+    while(!fuoriAcqua){
+        //fire
+        maxX = max_x_area - 5000;
+        minX = min_x_area + 5000;
+        maxY = max_y_area - 5000;
+        minY = min_y_area + 5000;
+        do{
+                firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
+                firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
+            }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
+        if(Math.pow(firePosition[0] - waterPosition[0],2) + Math.pow(firePosition[1] - waterPosition[1],2) > waterRadius+2000)
+            fuoriAcqua = true;
+    }
+
+    for(var i = 0; i < ilFuoco.length; i++){
+        ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
+        ilFuoco[i].position.set(firePosition[0], 50*fireScale, firePosition[1]);
+    }
 
     game_scene_div = document.getElementById('game_id');
     game_scene_div.appendChild(renderer.domElement);
@@ -2006,9 +2020,13 @@ function render_airport(){
 
 function fire_expansion(){
     //console.log(fireScale);
+    let win_timeout;
     if (!playFlag) return;
     if (ilFuoco[0].scale.x < 0.2) {
-        vittoria = true;
+        clearTimeout(win_timeout);
+        timeout = setTimeout(function() {
+        win_menu();
+        }, 2000);
         return;
     }
     if(ilFuoco[0].scale.x > 30){
@@ -2022,13 +2040,17 @@ function fire_expansion(){
 }
 
 function fire_extinguish(quanto){
+	let win_timeout;
     fireScale = fireScale - quanto;
     for(var i = 0; i < ilFuoco.length; i++){
         ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
         ilFuoco[i].position.set(firePosition[0], 50*fireScale, firePosition[1]);
     }
     if(quanto >= fireScale - 0.2)
-        vittoria = true;
+        clearTimeout(win_timeout);
+        win_timeout = setTimeout(function() {
+        win_menu();
+        }, 2000);
 }
 
 //Fire
