@@ -18,6 +18,9 @@
 \begin{document}
 
 \maketitle
+
+\includegraphics[width=\linewidth]{immag.png}
+
 \newpage
 
 \section*{Introduction}
@@ -27,8 +30,9 @@ Betulla Rescue is the result of the collaboration of three students from La Sapi
 
 \subsection*{Bombardier-415}
 The 3D model of the Bombardier-415 was downloaded through the site \textit{Cgtrader}\footnote{https://www.cgtrader.com/free-3d-models/aircraft/historic/bombardier-415-superscooper} and then modified using the program Blender v-2.80\footnote{https://www.blender.org/}. The model is composed of 78 children, which compose the torso, the wings, the propellers, the tail and the landing gear. We chose this model because it faithfully reproduces the object we wanted to recreate and it is easily modeled
+
 \begin{figure}[h!]
-  \includegraphics[width=\linewidth]{Canadair complete.png}
+  \includegraphics[width=\linewidth]{Canadaircomplete.png}
   \caption{Bombardier-415 opened with Blender v-2.80}
 \end{figure}
  
@@ -52,18 +56,18 @@ Fuoco + animazione + espansione
 \subsubsection*{Water}
 NON HO IDEA DI COSA SCRIVERE.. VI PREGO PENSATECI VOI (PARTE 2)
 lago + scarico acqua
+L'acqua è stata importata da qui\footnote{https://github.com/mrdoob/three.js/blob/master/examples/webgl\_shaders\_ocean.html\#L100}
 
 \subsection*{Airport}
 
 \subsubsection*{Hangars}
 From the websites \textit{Sketchfab} and \textit{Cgtrader}, we decided to import two different types of hangars so as to give a greater variety to the environment and make the airport area more realistic. The first type of hangar is a closed building\footnote{https://sketchfab.com/3d-models/hangar-558d7e381b9a4b099a49e72ff5824ecb}, very similar to a protected office or warehouse.
-The second is the classic hangar\footnote{https://www.cgtrader.com/free-3d-models/military/other/aircraft-low-poly-shelter-hangar} inside the airports, a metal structure that serves to cover the aircraft from the rain and sun.
+The second is the classic hangar\footnote{https://www.cgtrader.com/free-3d-models/military/other/aircraft-low-poly-shelter-hangar} inside the airports, a metal structure that serves to cover the aircraft from the rain and sun. A control tower\footnote{https://open3dmodel.com/download/communication-tower-building\_12469.html} has been positioned next to the hangars for communication with the base.
 
-\subsubsection*{Radio Tower} 
-Questo è il sito\footnote{https://open3dmodel.com/download/communication-tower-building\_12469.html}
 \subsubsection*{Take-off Runway}
-Pista\footnote{https://sketchfab.com/3d-models/sidewalk-c4d846ab2beb40e09582ef5d93746e6a}
+The runway was imported by \textit{Sketchfab}\footnote{https://sketchfab.com/3d-models/sidewalk-c4d846ab2beb40e09582ef5d93746e6a} and was designed to allow the aircraft to reach a speed of about 215 km/h. Considering that the stall speed of a Bombardier-415 is about 150 km/h and that therefore it must be the minimum speed to face a takeoff, the runway has been designed long enough to allow the possibility of a safe takeoff. We have also chosen to position the runway in the direction of the lake so as to help the player to reach the water surface as quickly as possible. 
 
+\newpage
 \section*{Animations of the plane}
 \subsection*{Maneuverability}
 Although we had initially decided to make the piloting of the aircraft very similar to a real simulation, with time and several tests we realized that the piloting was extremely complicated for a player without aeronautical knowledge. This problem of piloting would be boundless in the absence of fun, the primary objective of the game, and as a result we decided to structure the piloting in a simpler and more intuitive way. We rely on the WASD command set for piloting, i.e. controlling roll\footnote{The roll angle is the angle that rotates around the longitudinal axis, that is, the axis that connects the tip with the tail.} and pitch\footnote{The pitch angle is the angle that rotates along the latitudinal axis, that is, the axis that connects the two wing ends.} angles. We decided to avoid rotations along the yaw axis because we integrated the movements along this axis in the (automatic) movements of the rudder, which moves according to the turn to counteract the phenomenon of adverse yaw\footnote{https://en.wikipedia.org/wiki/Adverse\_yaw}. To turn, the player simply press the A (left) or D (right) commands. Pressing one of these two commands will cause the player to rotate along the roll axis in the direction of the turn, lowering the internal flaps of the internal wing and slightly raising the internal flaps of the external wing to the rotation. This movement of the flaps allows the inclination of the plane, in fact the flaps of the inner wing, slowing down cause an effect of inertia which rotates the plane, however, being the inner wing braked by the flaps, it is necessary to raise slightly the flaps of the outer wing so as to have a slowdown in the rotation of the anode the axis of yaw, also controlled by the movement of the rudder. All of these actions cause the plane to tilt and turn. For simplicity we have decided to limit the rotation up to a roll angle of 90 degrees. The rotation is progressive and depends on the angle of roll, the more the inclination will be accentuated and the smaller the turning radius will be. On the right of the screen, there will be a roll angle indicator expressed in degrees, positive for counterclockwise rotations and negative for clockwise rotations. Rotation along the pitch axis is controlled by the W controls for the dive and the S controls for the cab. Also in this case the rotation is limited and less than 60 degrees. During pitch rotation, the outer flaps of the wings move in a coordinated and inverse manner to the rudder flaps. In fact, for the cabin you will need to raise the front of the aircraft and lower the thing. To do this, the outer flaps of the wings will be lowered progressively, while the rudder flaps will be raised, thus causing a depression and lowering the tail. During the dive the opposite happens, i.e. the outer flaps of the wings are raised, while the rudder flaps are lowered. As for the roll, also the pitch has an indicator of the rotation, positive during the dive and negative during the cab. We decided not to give the possibility to mix the roll and pitch angles as the player would face configurations of difficult interpretation. We thought of a self-stable profile, which is for both roll and pitch, once released the command, the aircraft will return independently in the stable configuration. This greatly simplifies maneuverability and makes the game more accessible.
@@ -85,11 +89,11 @@ The take-off phase is one of the most delicate phases in the flight activity, th
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[h!]{0.4\linewidth}
-    \includegraphics[width=\linewidth]{ant open.png}
+    \includegraphics[width=\linewidth]{antopen.png}
     \caption{Front gear open}
   \end{subfigure}
   \begin{subfigure}[h!]{0.4\linewidth}
-    \includegraphics[width=\linewidth]{ant close.png}
+    \includegraphics[width=\linewidth]{antclose.png}
     \caption{Front gear close}
   \end{subfigure}
   \caption{Front gear during the closing of the landing gears}
@@ -98,11 +102,11 @@ The take-off phase is one of the most delicate phases in the flight activity, th
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[h!]{0.4\linewidth}
-    \includegraphics[width=\linewidth]{post open.png}
+    \includegraphics[width=\linewidth]{postopen.png}
     \caption{Rear gear open}
   \end{subfigure}
   \begin{subfigure}[h!]{0.4\linewidth}
-    \includegraphics[width=\linewidth]{post close.png}
+    \includegraphics[width=\linewidth]{postclose.png}
     \caption{Rear gear close}
   \end{subfigure}
   \caption{Rear gear during the closing of the landing gears}
@@ -124,6 +128,12 @@ At the bottom you can adjust the difficulty, choosing through 4 levels that appe
 \item \textbf{HARD}: For experienced players who want an extreme challenge, the fire will expand very quickly and you can fill the tank with an altitude less than or equal to 3 meters.
 \end{itemize}
 At the top left of the home screen there is a button with a loudspeaker that allows you to enable or disable the sound.
+
+\begin{figure}[h!]
+  \includegraphics[width=\linewidth]{initial.png}
+  \caption{Home page and with diccoulty menu}
+\end{figure}
+ 
 
 
 
