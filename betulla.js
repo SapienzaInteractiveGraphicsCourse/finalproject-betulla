@@ -11,11 +11,15 @@ var first_time = true;
 
 var waterPosition = [-15000, 6000];
 var waterRadius = 12500;
-const max_x_area= 20000;
-const min_x_area= -20000;
+const max_x_area= 12500;
+const min_x_area= -22500;
 const max_y_area= 10000;
 const min_y_area= -10000;
 
+// fire sound
+var listener = new THREE.AudioListener();
+var fire_sound = new THREE.PositionalAudio( listener );
+//fire
 var firePosition = [0,0];
 var fireScale, fireSpeed, fireInterval;
 var ilFuoco = [];
@@ -99,8 +103,10 @@ const height_difficulty_b=18.3;
 var motor_sound=new initialize_sound("sounds/motors.ogg");
 var cart_sound =new initialize_sound("sounds/cart.mp3");
 var gameover_sound=new initialize_sound("sounds/gameover.mp3");
+var water_sound =new initialize_sound("sounds/water.mp3");
 motor_sound.sound.loop=true;
-cart_sound.sound.playbackRate=0.3;
+motor_sound.sound.volume=0.8;
+cart_sound.sound.playbackRate=0.5;
 cart_sound.sound.onended=function(){cart_soundFlag=true;};
 cart_soundFlag=false;
 
@@ -118,6 +124,9 @@ const loadingManager = new THREE.LoadingManager( () => {
         
         //show game window
         document.getElementById('game_id').style.display = 'block';
+
+        if (volume) fire_sound.setVolume( 8 );
+        else fire_sound.setVolume( 0 );
 
         playFlag = true;
         animate();
@@ -220,16 +229,21 @@ function init() {
     GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
 
             model = gltf.scene;
+            model.traverse(function (children){
+				if ( children instanceof THREE.Mesh ) { children.castShadow = true; }
+            });
             if(!light_mode){
                 canadair2 = model.clone();
                 canadair3 = model.clone();
                 canadair2.position.set(-300, 5, -60);
                 canadair2.scale.set(1, 1, 1);
                 canadair2.rotation.y = Math.PI *  0.5;
+                canadair2.castShadow = true;
                 scene.add(canadair2);
                 canadair3.position.set(-5, 5, 50);
                 canadair3.scale.set(1, 1, 1);
                 canadair3.rotation.y = -Math.PI *0.5;
+                canadair3.castShadow = true;
                 scene.add(canadair3);
                 aeroporto.push(canadair2);
                 aeroporto.push(canadair3);
@@ -302,6 +316,7 @@ function init() {
     var groundMaterial = new THREE.MeshStandardMaterial( { roughness: 1, metalness: 1 } );
     var ground = new THREE.Mesh( groundGeometry, groundMaterial );
     ground.rotation.x = Math.PI * - 0.5;
+    ground.receiveShadow= true;
     scene.add( ground );
     texLoader.load( "images/grass_grass_0107_01.jpg", function ( map ) {
         map.wrapS = THREE.RepeatWrapping;
@@ -312,12 +327,58 @@ function init() {
         groundMaterial.needsUpdate = true;
     } );
 
+    // lights
+
+    light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 2 );
+    light.position.set( 0, 10, 0);
+    scene.add( light );
+
+    dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
+    dirLight.position.set(  -1, 3, -0.2 ); 
+    dirLight.penumbra = 0.5;
+    dirLight.decay = 1.3;
+    dirLight.distance = 200;
+    dirLight.castShadow = true;
+    dirLight.shadowDarkness=0.5;
+    dirLight.shadow.mapSize.width = 550;
+    dirLight.shadow.mapSize.height = 550;
+    dirLight.shadow.camera.near = 0.5;
+    dirLight.shadow.camera.far = 500
+    scene.add( dirLight );
+
     // lake
     var lakeGeometry = new THREE.CircleGeometry( waterRadius, 64 );
-    var lakeMaterial = new THREE.MeshStandardMaterial( { shiness: 80, metalness: 1, color: 0x3794cf } );
-    var lake = new THREE.Mesh( lakeGeometry, lakeMaterial );
-    lake.rotation.x = Math.PI * - 0.5;
+
+    if (light_mode) {
+    	var lakeMaterial = new THREE.MeshStandardMaterial( {metalness: 0.5, color: 0x194d33 } );
+    	texLoader.load( "images/waternormals.jpg", function ( map ) {
+    	    map.wrapS = THREE.RepeatWrapping;
+    	    map.wrapT = THREE.RepeatWrapping;
+    	    map.anisotropy = 16;
+    	    map.repeat.set( 500, 500 );
+    	    lakeMaterial.map = map;
+    	    lakeMaterial.needsUpdate = true;
+    	} );
+    	var lake = new THREE.Mesh( lakeGeometry, lakeMaterial );
+    }
+    else {
+	    lake = new Water( lakeGeometry, {
+	        textureWidth: 512, 
+	        textureHeight: 512,
+	        waterNormals: texLoader.load( 'images/waternormals.jpg', function ( texture ) {
+				texture.wrapS = texture.wrapT = THREE.RepeatWrapping;
+			} ),
+	        alpha:  1.0,
+	        sunDirection: dirLight.position.clone().normalize(),
+	        sunColor: 0xffffff,
+	        waterColor: 0x001e0f,
+	        distortionScale: 3.7,
+	    } );
+    }
+
+    lake.rotation.x = - Math.PI * 0.5;
     lake.position.set(waterPosition[0], 2, waterPosition[1]);
+    lake.receiveShadow= true;
     scene.add( lake );
 
     //load grass
@@ -331,21 +392,25 @@ function init() {
                 for(var i = 0; i < 12; i++){
                     grassLine[i] = grass.clone();
                     grassLine[i].position.set(-i*70, 0, 60);
+                    grassLine[i].receiveShadow= true;
                     scene.add( grassLine[i] );
                 }
                 for(var j = 5; j < 12; j++){
                     grassLine2[j] = grass.clone();
                     grassLine2[j].position.set(-j*70, 0, 130);
+                    grassLine2[j].receiveShadow= true;
                     scene.add( grassLine2[j] );
                 }
                 for(var j = 12; j < 19; j++){
                     grassLine2[j] = grass.clone();
                     grassLine2[j].position.set(-(j-10)*70, 0, -110);
+                    grassLine2[j].receiveShadow= true;
                     scene.add( grassLine2[j] );
                 }
                 for(var i = 12; i < 24; i++){
                     grassLine[i] = grass.clone();
                     grassLine[i].position.set(-(i-12)*70, 0, -40);
+                    grassLine[i].receiveShadow= true;
                     scene.add( grassLine[i] );
                 }
                 //scene.add( grass );
@@ -369,6 +434,7 @@ function init() {
                 street = street.clone();
                 street.position.set(-i*55, 0, 0);
                 street.rotation.y = Math.PI/2;
+                street.receiveShadow= true;
                 scene.add( street );
                 aeroporto.push(street);
             }
@@ -376,6 +442,7 @@ function init() {
                 street = street.clone();
                 street.position.set(-(i-15)*55, 0, 18);
                 street.rotation.y = -Math.PI/2;
+                street.receiveShadow= true;
                 scene.add( street );
                 aeroporto.push(street);
             }
@@ -395,6 +462,7 @@ function init() {
                 tower = gltf.scene;
                 tower.position.set(-600, 0, -60);
                 tower.scale.set(0.2, 0.2, 0.2);
+                tower.castShadow= true;
                 scene.add( tower );
                 aeroporto.push(tower);
             },
@@ -411,6 +479,12 @@ function init() {
     if(!light_mode){
         GLTFloader.load('Models/hangar/scene.gltf', function ( gltf ) {
                 hangar = gltf.scene;
+                hangar.traverse(function(node){
+                    if( node instanceof THREE.Mesh ){
+                        node.castShadow = true;
+                        node.receiveShadow = true;
+                    }
+                });
                 hangar.position.set(-100, 0, 60);
                 hangar.scale.set(3, 3, 3);
                 //hanger.rotation.y = Math.PI/2;
@@ -493,6 +567,7 @@ function init() {
             tree.scale.set(0.08, 0.08, 0.08);
             for(var i = 0; i < treeNum; i++){
                 tree = tree.clone();
+                tree.castShadow=true;
                 trees.push(tree);
             }
             render_trees(0, 0);
@@ -512,6 +587,7 @@ function init() {
             tree.scale.set(4, 4, 4);
             for(var i = 0; i < 30; i++){
                 tree = tree.clone();
+                tree.castShadow=true;
                 burnedTree.push(tree);
             }
             setInterval(update_burned_tree,2500);
@@ -525,11 +601,27 @@ function init() {
             console.log( 'An error happened' );
         });
 
+    camera.add( listener );
+    // fire sound
+    var audioLoader = new THREE.AudioLoader();
+    audioLoader.load( 'sounds/forest_fire.ogg', function( buffer ) {
+        fire_sound.setBuffer( buffer );
+        fire_sound.setRefDistance( 80 );
+        fire_sound.setLoop( true );
+        if (volume) fire_sound.setVolume( 1 );
+        else fire_sound.setVolume( 0 );
+        fire_sound.play();
+    });
+    var fire_sound_Geometry = new THREE.BoxGeometry(0.5, 0.5, 0.5);
+    var fire_sound_Material = new THREE.MeshBasicMaterial({color: 0xff0000, wireframe: false});
+    fire_sound_mesh = new THREE.Mesh(fire_sound_Geometry, fire_sound_Material); 
+    fire_sound_Material.transparent = true ;
+
     //fire
-    maxX = max_x_area -3000;
-    minX = min_x_area +3000;
-    maxY = max_y_area - 3000;
-    minY = min_y_area +3000;
+    maxX = max_x_area - 5000;
+    minX = min_x_area + 5000;
+    maxY = max_y_area - 5000;
+    minY = min_y_area + 5000;
     do{
             firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
             firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
@@ -543,8 +635,13 @@ function init() {
     } );
     fire.position.set(firePosition[0], 150*fireScale, firePosition[1]);
     fire.scale.set(fireScale, fireScale, fireScale);
+    fire.castShadow=true;
     scene.add( fire );
     ilFuoco.push(fire);
+
+    fire_sound_mesh.position.set(firePosition[0], 150*fireScale, firePosition[1]);
+    scene.add(fire_sound_mesh);
+    fire_sound_mesh.add(fire_sound);
 
     var fire1 = fire.clone()
     fire1.rotation.y = Math.PI/2;
@@ -587,35 +684,6 @@ function init() {
 
     //create water particles
     defineParticles ();
-
-    // LIGHTS
-    light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 1 );
-    light.position.set( 0, 1000000, 0 );
-    scene.add( light );
-
-    dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
-    dirLight.position.set( - 1, -1.75, 1 );
-    dirLight.penumbra = 0.5;
-    dirLight.decay = 1.3;
-    dirLight.distance = 200;
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 550;
-    dirLight.shadow.mapSize.height = 550;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 500
-    scene.add( dirLight );
-
-    dirLight = new THREE.DirectionalLight( 0xffffff, 4 );
-    dirLight.position.set(  1, 1.75, -1 );
-    dirLight.penumbra = 0.5;
-    dirLight.decay = 1.3;
-    dirLight.distance = 200;
-    dirLight.castShadow = true;
-    dirLight.shadow.mapSize.width = 550;
-    dirLight.shadow.mapSize.height = 550;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 500
-    scene.add( dirLight );
 
     var skyGeo = new THREE.SphereGeometry(100000, 25, 25);
     texture = texLoader.load( "images/sky.jpg" );
@@ -664,7 +732,11 @@ function animate() {
         document.getElementById('pitch').innerHTML = "Pitch angle: " + pitch.toFixed(0) + "°";
         document.getElementById('conversation').innerHTML = "Camil: " + message;
 
-        if (vittoria) modal("myModal_6");
+        if (vittoria) {
+        	modal("myModal_6");
+        	fire_sound.setVolume=0;
+        	scene.remove(fire);
+        }
 
         if (!ground){
             let r = roll.toFixed(0);
@@ -951,7 +1023,6 @@ function motion() {
 function manage_velocity() {
 
     /* livelli di velocità:
-        motori 0 -> si scende fino a circa 150 km/h e poi si stalla
         motori 1 -> velocità di 150 km/h
         motori 2 -> velocità di 206 km/h
         motori 3 -> velocità di 263 km/h
@@ -979,28 +1050,32 @@ function manage_velocity() {
 
 }
 
+var msg_id=0;
+
 function messages() {
 
-    exclamation = [ "Perfect!", "Well done!", "Good job!"];
+    exclamation = [ "Well done!", "Good job!", "Perfect!"];  
 
     if (ground && motors == 0) message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
-    else if (ground && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
-    else if (carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go and load the water.";
+    else if (ground && motors != 0) message = "OK, now you have to reach the maximum possible speed [-hold B-] (at least until you reach 150 km / h) and pull the cloche [-hold S-]. Remember not to turn during the takeoff phase! Good luck with that. ";
+    else if (carrello) message = "Perfect! Now close the landing gear [-press C-] and take a sufficient height (at least 100 meters) and go load the water.";
     else if (height > 700) message = "Decrease the altitude immediately or we'll fail the mission!";
+    else if ((emptyingTank && !fire) || (emptyingTank && posizione_sopra_acqua(model.position.x, model.position.z))) message= "You need to empty the tank on the fire!";
+    else if (pressed_bar && !emptyingTank) message= "You can't empty the tank while you're turning! Re-try with roll angle between -20° and 20° and a pitch between -40° and 80°";
+    else if (emptyingTank && fire) {
+        message= exclamation[msg_id];
+    }
+    else if (fire && tank) message = "Now, empty the tank to extinguish the fire [-press spacebar-].";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
     else if (model.position.x<(min_x_area+3000) || model.position.x>(max_x_area-3000) || 
-        model.position.z>(max_y_area-3000) || model.position.z<(min_y_area+3000)) message="You are going too far! Come back or you will fail your mission!"
+        model.position.z>(max_y_area-3000) || model.position.z<(min_y_area+3000)) message="You are going too far! Come back or we'll fail the mission!"
     else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 90 && !posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
-    else if (!onLake && !tank && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Descend to an altitude of at least " + (height_difficulty-3.3) + " meters to be able to fill the tank";
+    else if (!onLake && !tank && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Descend to an altitude of at least " + (height_difficulty-3).toFixed(0) + " meters to be able to fill the tank";
     else if (onLake && !tank) message = "All right, fill the tank [-press spacebar-].";
     else if (onLake && tank) message = "Perfect, now gain some altitude and go to the fire.";
     else if (!tank) message = "Ok, now go to the lake to fill the tank!";
-    else if (fire && tank) message = "Perfect, empty the tank to extinguish the fire [-press spacebar-].";
-    else if (pressed_bar && !emptyingTank) message= "You can't empty the tank while you're turning! Re-try with roll angle between -20° and 20° and a pitch between -40° and 80°";
     else if (tank) message = "Come on, get to the fire and empty the tank!";
-    else if (emptyingTank && fire) message= exclamation[Math.floor(Math.random()*textArray.length)];
-    else if (emptyingTank && !fire) message= "You need to empty the tank on the fire!";
 
 }
 
@@ -1105,6 +1180,7 @@ function onDocumentKeyDown(event) {
 
         case 32: //space bar
             if (tank) {
+                let timeout;
                 pressed_bar = true;
                 let r = roll.toFixed(0);
                 let p = pitch.toFixed(0);
@@ -1112,6 +1188,7 @@ function onDocumentKeyDown(event) {
                     waterClock.start();
                     tank = false;
                     emptyingTank = true;
+                    water_sound.sound.play();
                     moving_bar(0);
                 }
                 if(posizione_sopra_fuoco(model.position.x,model.position.z)){
@@ -1121,7 +1198,13 @@ function onDocumentKeyDown(event) {
                     if(quanto < 0)
                         quanto = 2;
                     fire_extinguish(quanto);
+                    msg_id++;
+                    if (msg_id%3==0) msg_id=0;
                 }
+                clearTimeout(timeout);
+                timeout = setTimeout(function() {
+                pressed_bar = false; 
+                }, 5000);
             } else if (onLake && !emptyingTank) {
                 moving_bar(1);
                 tank = true;
@@ -1170,13 +1253,17 @@ function audio_game(val){
         }
         motor_sound.sound.volume=0;
         cart_sound.sound.volume=0;
+        water_sound.sound.volume=0;
+        fire_sound.setVolume(0);
     }
     else {
         if (!playFlag) {
             menu_music.muted = false;
         }
-        motor_sound.sound.volume = 1;
+        motor_sound.sound.volume = 0.8;
         cart_sound.sound.volume = 1;
+        water_sound.sound.volume=1;
+        fire_sound.setVolume(8);
     }
 }
 
@@ -1204,6 +1291,8 @@ function play_pause() {
         menu_music.muted=true;
         if(motors>0) motor_sound.sound.play();
         if (!cart_soundFlag && !carrello) cart_sound.sound.play();
+        if (emptyingTank) water_sound.sound.play();
+        fire_sound.setVolume(8);
 
         pauseInterval+=pauseClock.getElapsedTime()-pauseTime;
 
@@ -1214,6 +1303,8 @@ function play_pause() {
 
         motor_sound.sound.pause();
         cart_sound.sound.pause();
+        water_sound.sound.pause();
+        fire_sound.setVolume(0);
         if (volume) menu_music.muted=false;
     }
 }
@@ -1222,6 +1313,7 @@ function game_over_menu(message){ //to call when gameover
     playFlag = false;
     motor_sound.sound.pause();
     cart_sound.sound.pause();
+    water_sound.sound.pause();
     document.getElementById("gameover_msg").innerHTML= message;
     modal("myModal_5");
     if (volume) gameover_sound.sound.play();
@@ -1231,6 +1323,7 @@ function restart_game() {
     if (confirm("Are you sure?")) {
         document.getElementById("myModal_3").style.display = "none";
         document.getElementById("myModal_5").style.display = "none";
+        document.getElementById("myModal_6").style.display = "none";
         canvas_id = document.getElementById("canvas_id");
         canvas_id.remove();
         reset_var();
@@ -1243,6 +1336,7 @@ function load_menu(){
     if (confirm("Are you sure?")) {
         document.getElementById("myModal_3").style.display = "none";
         document.getElementById("myModal_5").style.display = "none";
+        document.getElementById("myModal_6").style.display = "none";
         canvas_id = document.getElementById("canvas_id");
         canvas_id.remove();
         reset_var();
@@ -1735,7 +1829,7 @@ function render_airport(){
 }
 
 function fire_expansion(){
-    console.log(fireScale);
+    //console.log(fireScale);
     if (!playFlag) return;
     if (ilFuoco[0].scale.x < 0.2) {
         vittoria = true;
@@ -2788,3 +2882,304 @@ Fire.DebugShader = {
 
     ].join( "\n" )
 };
+
+//Water
+var Water = function ( geometry, options ) {
+
+	THREE.Mesh.call( this, geometry );
+
+	var scope = this;
+
+	options = options || {};
+
+	var textureWidth = options.textureWidth !== undefined ? options.textureWidth : 512;
+	var textureHeight = options.textureHeight !== undefined ? options.textureHeight : 512;
+
+	var clipBias = options.clipBias !== undefined ? options.clipBias : 0.0;
+	var alpha = options.alpha !== undefined ? options.alpha : 1.0;
+	var time = options.time !== undefined ? options.time : 0.0;
+	var normalSampler = options.waterNormals !== undefined ? options.waterNormals : null;
+	var sunDirection = options.sunDirection !== undefined ? options.sunDirection : new THREE.Vector3( 0.70707, 0.70707, 0.0 );
+	var sunColor = new THREE.Color( options.sunColor !== undefined ? options.sunColor : 0xffffff );
+	var waterColor = new THREE.Color( options.waterColor !== undefined ? options.waterColor : 0x7F7F7F );
+	var eye = options.eye !== undefined ? options.eye : new THREE.Vector3( 0, 0, 0 );
+	var distortionScale = options.distortionScale !== undefined ? options.distortionScale : 20.0;
+	var side = options.side !== undefined ? options.side : THREE.FrontSide;
+	var fog = options.fog !== undefined ? options.fog : false;
+
+	var mirrorPlane = new THREE.Plane();
+	var normal = new THREE.Vector3();
+	var mirrorWorldPosition = new THREE.Vector3();
+	var cameraWorldPosition = new THREE.Vector3();
+	var rotationMatrix = new THREE.Matrix4();
+	var lookAtPosition = new THREE.Vector3( 0, 0, - 1 );
+	var clipPlane = new THREE.Vector4();
+
+	var view = new THREE.Vector3();
+	var target = new THREE.Vector3();
+	var q = new THREE.Vector4();
+
+	var textureMatrix = new THREE.Matrix4();
+
+	var mirrorCamera = new THREE.PerspectiveCamera();
+
+	var parameters = {
+		minFilter: THREE.LinearFilter,
+		magFilter: THREE.LinearFilter,
+		format: THREE.RGBFormat,
+		stencilBuffer: false
+	};
+
+	var renderTarget = new THREE.WebGLRenderTarget( textureWidth, textureHeight, parameters );
+
+	if ( ! THREE.Math.isPowerOfTwo( textureWidth ) || ! THREE.Math.isPowerOfTwo( textureHeight ) ) {
+
+		renderTarget.texture.generateMipmaps = false;
+
+	}
+
+	var mirrorShader = {
+
+		uniforms: THREE.UniformsUtils.merge( [
+			THREE.UniformsLib[ 'fog' ],
+			THREE.UniformsLib[ 'lights' ],
+			{
+				"normalSampler": { value: null },
+				"mirrorSampler": { value: null },
+				"alpha": { value: 1.0 },
+				"time": { value: 0.0 },
+				"size": { value: 1.0 },
+				"distortionScale": { value: 20.0 },
+				"textureMatrix": { value: new THREE.Matrix4() },
+				"sunColor": { value: new THREE.Color( 0x7F7F7F ) },
+				"sunDirection": { value: new THREE.Vector3( 0.70707, 0.70707, 0 ) },
+				"eye": { value: new THREE.Vector3() },
+				"waterColor": { value: new THREE.Color( 0x555555 ) }
+			}
+		] ),
+
+		vertexShader: [
+			'uniform mat4 textureMatrix;',
+			'uniform float time;',
+
+			'varying vec4 mirrorCoord;',
+			'varying vec4 worldPosition;',
+
+			THREE.ShaderChunk[ 'fog_pars_vertex' ],
+			THREE.ShaderChunk[ 'shadowmap_pars_vertex' ],
+
+			'void main() {',
+			'	mirrorCoord = modelMatrix * vec4( position, 1.0 );',
+			'	worldPosition = mirrorCoord.xyzw;',
+			'	mirrorCoord = textureMatrix * mirrorCoord;',
+			'	vec4 mvPosition =  modelViewMatrix * vec4( position, 1.0 );',
+			'	gl_Position = projectionMatrix * mvPosition;',
+
+			THREE.ShaderChunk[ 'fog_vertex' ],
+			THREE.ShaderChunk[ 'shadowmap_vertex' ],
+
+			'}'
+		].join( '\n' ),
+
+		fragmentShader: [
+			'uniform sampler2D mirrorSampler;',
+			'uniform float alpha;',
+			'uniform float time;',
+			'uniform float size;',
+			'uniform float distortionScale;',
+			'uniform sampler2D normalSampler;',
+			'uniform vec3 sunColor;',
+			'uniform vec3 sunDirection;',
+			'uniform vec3 eye;',
+			'uniform vec3 waterColor;',
+
+			'varying vec4 mirrorCoord;',
+			'varying vec4 worldPosition;',
+
+			'vec4 getNoise( vec2 uv ) {',
+			'	vec2 uv0 = ( uv / 103.0 ) + vec2(time / 17.0, time / 29.0);',
+			'	vec2 uv1 = uv / 107.0-vec2( time / -19.0, time / 31.0 );',
+			'	vec2 uv2 = uv / vec2( 8907.0, 9803.0 ) + vec2( time / 101.0, time / 97.0 );',
+			'	vec2 uv3 = uv / vec2( 1091.0, 1027.0 ) - vec2( time / 109.0, time / -113.0 );',
+			'	vec4 noise = texture2D( normalSampler, uv0 ) +',
+			'		texture2D( normalSampler, uv1 ) +',
+			'		texture2D( normalSampler, uv2 ) +',
+			'		texture2D( normalSampler, uv3 );',
+			'	return noise * 0.5 - 1.0;',
+			'}',
+
+			'void sunLight( const vec3 surfaceNormal, const vec3 eyeDirection, float shiny, float spec, float diffuse, inout vec3 diffuseColor, inout vec3 specularColor ) {',
+			'	vec3 reflection = normalize( reflect( -sunDirection, surfaceNormal ) );',
+			'	float direction = max( 0.0, dot( eyeDirection, reflection ) );',
+			'	specularColor += pow( direction, shiny ) * sunColor * spec;',
+			'	diffuseColor += max( dot( sunDirection, surfaceNormal ), 0.0 ) * sunColor * diffuse;',
+			'}',
+
+			THREE.ShaderChunk[ 'common' ],
+			THREE.ShaderChunk[ 'packing' ],
+			THREE.ShaderChunk[ 'bsdfs' ],
+			THREE.ShaderChunk[ 'fog_pars_fragment' ],
+			THREE.ShaderChunk[ 'lights_pars_begin' ],
+			THREE.ShaderChunk[ 'shadowmap_pars_fragment' ],
+			THREE.ShaderChunk[ 'shadowmask_pars_fragment' ],
+
+			'void main() {',
+			'	vec4 noise = getNoise( worldPosition.xz * size );',
+			'	vec3 surfaceNormal = normalize( noise.xzy * vec3( 1.5, 1.0, 1.5 ) );',
+
+			'	vec3 diffuseLight = vec3(0.0);',
+			'	vec3 specularLight = vec3(0.0);',
+
+			'	vec3 worldToEye = eye-worldPosition.xyz;',
+			'	vec3 eyeDirection = normalize( worldToEye );',
+			'	sunLight( surfaceNormal, eyeDirection, 100.0, 2.0, 0.5, diffuseLight, specularLight );',
+
+			'	float distance = length(worldToEye);',
+
+			'	vec2 distortion = surfaceNormal.xz * ( 0.001 + 1.0 / distance ) * distortionScale;',
+			'	vec3 reflectionSample = vec3( texture2D( mirrorSampler, mirrorCoord.xy / mirrorCoord.w + distortion ) );',
+
+			'	float theta = max( dot( eyeDirection, surfaceNormal ), 0.0 );',
+			'	float rf0 = 0.3;',
+			'	float reflectance = rf0 + ( 1.0 - rf0 ) * pow( ( 1.0 - theta ), 5.0 );',
+			'	vec3 scatter = max( 0.0, dot( surfaceNormal, eyeDirection ) ) * waterColor;',
+			'	vec3 albedo = mix( ( sunColor * diffuseLight * 0.3 + scatter ) * getShadowMask(), ( vec3( 0.1 ) + reflectionSample * 0.9 + reflectionSample * specularLight ), reflectance);',
+			'	vec3 outgoingLight = albedo;',
+			'	gl_FragColor = vec4( outgoingLight, alpha );',
+
+			THREE.ShaderChunk[ 'tonemapping_fragment' ],
+			THREE.ShaderChunk[ 'fog_fragment' ],
+
+			'}'
+		].join( '\n' )
+
+	};
+
+	var material = new THREE.ShaderMaterial( {
+		fragmentShader: mirrorShader.fragmentShader,
+		vertexShader: mirrorShader.vertexShader,
+		uniforms: THREE.UniformsUtils.clone( mirrorShader.uniforms ),
+		transparent: true,
+		lights: true,
+		side: side,
+		fog: fog
+	} );
+
+	material.uniforms[ "mirrorSampler" ].value = renderTarget.texture;
+	material.uniforms[ "textureMatrix" ].value = textureMatrix;
+	material.uniforms[ "alpha" ].value = alpha;
+	material.uniforms[ "time" ].value = time;
+	material.uniforms[ "normalSampler" ].value = normalSampler;
+	material.uniforms[ "sunColor" ].value = sunColor;
+	material.uniforms[ "waterColor" ].value = waterColor;
+	material.uniforms[ "sunDirection" ].value = sunDirection;
+	material.uniforms[ "distortionScale" ].value = distortionScale;
+
+	material.uniforms[ "eye" ].value = eye;
+
+	scope.material = material;
+
+	scope.onBeforeRender = function ( renderer, scene, camera ) {
+
+		mirrorWorldPosition.setFromMatrixPosition( scope.matrixWorld );
+		cameraWorldPosition.setFromMatrixPosition( camera.matrixWorld );
+
+		rotationMatrix.extractRotation( scope.matrixWorld );
+
+		normal.set( 0, 0, 1 );
+		normal.applyMatrix4( rotationMatrix );
+
+		view.subVectors( mirrorWorldPosition, cameraWorldPosition );
+
+		// Avoid rendering when mirror is facing away
+
+		if ( view.dot( normal ) > 0 ) return;
+
+		view.reflect( normal ).negate();
+		view.add( mirrorWorldPosition );
+
+		rotationMatrix.extractRotation( camera.matrixWorld );
+
+		lookAtPosition.set( 0, 0, - 1 );
+		lookAtPosition.applyMatrix4( rotationMatrix );
+		lookAtPosition.add( cameraWorldPosition );
+
+		target.subVectors( mirrorWorldPosition, lookAtPosition );
+		target.reflect( normal ).negate();
+		target.add( mirrorWorldPosition );
+
+		mirrorCamera.position.copy( view );
+		mirrorCamera.up.set( 0, 1, 0 );
+		mirrorCamera.up.applyMatrix4( rotationMatrix );
+		mirrorCamera.up.reflect( normal );
+		mirrorCamera.lookAt( target );
+
+		mirrorCamera.far = camera.far; // Used in WebGLBackground
+
+		mirrorCamera.updateMatrixWorld();
+		mirrorCamera.projectionMatrix.copy( camera.projectionMatrix );
+
+		// Update the texture matrix
+		textureMatrix.set(
+			0.5, 0.0, 0.0, 0.5,
+			0.0, 0.5, 0.0, 0.5,
+			0.0, 0.0, 0.5, 0.5,
+			0.0, 0.0, 0.0, 1.0
+		);
+		textureMatrix.multiply( mirrorCamera.projectionMatrix );
+		textureMatrix.multiply( mirrorCamera.matrixWorldInverse );
+
+		// Now update projection matrix with new clip plane, implementing code from: http://www.terathon.com/code/oblique.html
+		// Paper explaining this technique: http://www.terathon.com/lengyel/Lengyel-Oblique.pdf
+		mirrorPlane.setFromNormalAndCoplanarPoint( normal, mirrorWorldPosition );
+		mirrorPlane.applyMatrix4( mirrorCamera.matrixWorldInverse );
+
+		clipPlane.set( mirrorPlane.normal.x, mirrorPlane.normal.y, mirrorPlane.normal.z, mirrorPlane.constant );
+
+		var projectionMatrix = mirrorCamera.projectionMatrix;
+
+		q.x = ( Math.sign( clipPlane.x ) + projectionMatrix.elements[ 8 ] ) / projectionMatrix.elements[ 0 ];
+		q.y = ( Math.sign( clipPlane.y ) + projectionMatrix.elements[ 9 ] ) / projectionMatrix.elements[ 5 ];
+		q.z = - 1.0;
+		q.w = ( 1.0 + projectionMatrix.elements[ 10 ] ) / projectionMatrix.elements[ 14 ];
+
+		// Calculate the scaled plane vector
+		clipPlane.multiplyScalar( 2.0 / clipPlane.dot( q ) );
+
+		// Replacing the third row of the projection matrix
+		projectionMatrix.elements[ 2 ] = clipPlane.x;
+		projectionMatrix.elements[ 6 ] = clipPlane.y;
+		projectionMatrix.elements[ 10 ] = clipPlane.z + 1.0 - clipBias;
+		projectionMatrix.elements[ 14 ] = clipPlane.w;
+
+		eye.setFromMatrixPosition( camera.matrixWorld );
+
+		//
+
+		var currentRenderTarget = renderer.getRenderTarget();
+
+		var currentVrEnabled = renderer.vr.enabled;
+		var currentShadowAutoUpdate = renderer.shadowMap.autoUpdate;
+
+		scope.visible = false;
+
+		renderer.vr.enabled = false; // Avoid camera modification and recursion
+		renderer.shadowMap.autoUpdate = false; // Avoid re-computing shadows
+
+		renderer.setRenderTarget( renderTarget );
+		renderer.clear();
+		renderer.render( scene, mirrorCamera );
+
+		scope.visible = true;
+
+		renderer.vr.enabled = currentVrEnabled;
+		renderer.shadowMap.autoUpdate = currentShadowAutoUpdate;
+
+		renderer.setRenderTarget( currentRenderTarget );
+
+	};
+
+};
+
+Water.prototype = Object.create( THREE.Mesh.prototype );
+Water.prototype.constructor = THREE.Water;
