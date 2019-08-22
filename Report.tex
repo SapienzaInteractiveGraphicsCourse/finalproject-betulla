@@ -19,7 +19,7 @@
 
 \maketitle
 
-\includegraphics[width=\linewidth]{immag.png}
+\includegraphics[width=\linewidth]{ImmaginiReport/immag.png}
 
 \newpage
 
@@ -32,7 +32,7 @@ Betulla Rescue is the result of the collaboration of three students from La Sapi
 The 3D model of the Bombardier-415\footnote{All the informations about the Bombardier-415 are taken from http://www2.malignani.ud.it/WebEnis/aer/Portfolio/CANADAIR\_CL415.pdf} was downloaded through the site \textit{Cgtrader}\footnote{https://www.cgtrader.com/free-3d-models/aircraft/historic/bombardier-415-superscooper} and then modified using the program Blender v-2.80\footnote{https://www.blender.org/}. The model is composed of 78 children, which compose the torso, the wings, the propellers, the tail and the landing gear. We chose this model because it faithfully reproduces the object we wanted to recreate and it is easily modeled
 
 \begin{figure}[h!]
-  \includegraphics[width=\linewidth]{Canadaircomplete.png}
+  \includegraphics[width=\linewidth]{ImmaginiReport/Canadaircomplete.png}
   \caption{Bombardier-415 opened with Blender v-2.80}
 \end{figure}
  
@@ -73,7 +73,7 @@ The runway was imported by \textit{Sketchfab}\footnote{https://sketchfab.com/3d-
 Although we had initially decided to make the piloting of the aircraft very similar to a real simulation, with time and several tests we realized that the piloting was extremely complicated for a player without aeronautical knowledge. This problem of piloting would be boundless in the absence of fun, the primary objective of the game, and as a result we decided to structure the piloting in a simpler and more intuitive way. We rely on the WASD command set for piloting, i.e. controlling roll\footnote{The roll angle is the angle that rotates around the longitudinal axis, that is, the axis that connects the tip with the tail.} and pitch\footnote{The pitch angle is the angle that rotates along the latitudinal axis, that is, the axis that connects the two wing ends.} angles. We decided to avoid rotations along the yaw axis because we integrated the movements along this axis in the (automatic) movements of the rudder, which moves according to the turn to counteract the phenomenon of adverse yaw\footnote{https://en.wikipedia.org/wiki/Adverse\_yaw}. To turn, the player simply press the A (left) or D (right) commands. Pressing one of these two commands will cause the player to rotate along the roll axis in the direction of the turn, lowering the internal flaps of the internal wing and slightly raising the internal flaps of the external wing to the rotation. This movement of the flaps allows the inclination of the plane, in fact the flaps of the inner wing, slowing down cause an effect of inertia which rotates the plane, however, being the inner wing braked by the flaps, it is necessary to raise slightly the flaps of the outer wing so as to have a slowdown in the rotation of the anode the axis of yaw, also controlled by the movement of the rudder. All of these actions cause the plane to tilt and turn. For simplicity we have decided to limit the rotation up to a roll angle of 90 degrees. The rotation is progressive and depends on the angle of roll, the more the inclination will be accentuated and the smaller the turning radius will be. On the right of the screen, there will be a roll angle indicator expressed in degrees, positive for counterclockwise rotations and negative for clockwise rotations. Rotation along the pitch axis is controlled by the W controls for the dive and the S controls for the cab. Also in this case the rotation is limited and less than 60 degrees. During pitch rotation, the outer flaps of the wings move in a coordinated and inverse manner to the rudder flaps. In fact, for the cabin you will need to raise the front of the aircraft and lower the thing. To do this, the outer flaps of the wings will be lowered progressively, while the rudder flaps will be raised, thus causing a depression and lowering the tail. During the dive the opposite happens, i.e. the outer flaps of the wings are raised, while the rudder flaps are lowered. As for the roll, also the pitch has an indicator of the rotation, positive during the dive and negative during the cab. We decided not to give the possibility to mix the roll and pitch angles as the player would face configurations of difficult interpretation. We thought of a self-stable profile, which is for both roll and pitch, once released the command, the aircraft will return independently in the stable configuration. This greatly simplifies maneuverability and makes the game more accessible.
 
 \begin{figure}[h!]
-  \includegraphics[width=\linewidth]{schermata.png}
+  \includegraphics[width=\linewidth]{ImmaginiReport/schermata.png}
   \caption{A screenshot during the game}
 \end{figure}
  
@@ -95,11 +95,11 @@ The take-off phase is one of the most delicate phases in the flight activity, th
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[b]{0.4\linewidth}
-    \includegraphics[height=48mm]{antopen.png}
+    \includegraphics[height=48mm]{ImmaginiReport/antopen.png}
     \caption{Front gear open}
   \end{subfigure}
   \begin{subfigure}[b]{0.4\linewidth}
-    \includegraphics[height=48mm]{antclose.png}
+    \includegraphics[height=48mm]{ImmaginiReport/antclose.png}
     \caption{Front gear close}
   \end{subfigure}
   \caption{Front gear during the closing of the landing gears}
@@ -108,11 +108,11 @@ The take-off phase is one of the most delicate phases in the flight activity, th
 \begin{figure}[h!]
   \centering
   \begin{subfigure}[h!]{0.4\linewidth}
-    \includegraphics[height=80mm]{postopen.png}
+    \includegraphics[height=80mm]{ImmaginiReport/postopen.png}
     \caption{Rear gear open}
   \end{subfigure}
   \begin{subfigure}[h!]{0.4\linewidth}
-    \includegraphics[height=80mm]{postclose.png}
+    \includegraphics[height=80mm]{ImmaginiReport/postclose.png}
     \caption{Rear gear close}
   \end{subfigure}
   \caption{Rear gear during the closing of the landing gears}
@@ -138,7 +138,7 @@ At the bottom you can adjust the difficulty, choosing through 4 levels that appe
 At the top left of the home screen there is a button with a loudspeaker that allows you to enable or disable the sound.
 
 \begin{figure}[h!]
-  \includegraphics[width=\linewidth]{initial.png}
+  \includegraphics[width=\linewidth]{ImmaginiReport/initial.png}
   \caption{Home page and with diccoulty menu}
 \end{figure}
  
