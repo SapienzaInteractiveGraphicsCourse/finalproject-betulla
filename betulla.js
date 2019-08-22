@@ -1091,7 +1091,7 @@ function manage_velocity() {
 
     if (!playFlag) return;
 
-    if (ground && motors > 0 && vel < 151) vel += 1.2;
+    if (ground && motors > 0 && vel < 171) vel += 1.2;
     if (vel < 206+(Math.sin(pitch*Math.PI/180)*20) && motors > 1) vel += 0.67; // se la velocità è minore di 206 e i motori sono stettati a 2,3,4 o 5, accelera di 0.67
     else if (vel < 263+(Math.sin(pitch*Math.PI/180)*20) && motors > 2) vel += 0.5; // se la velocità è minore di 263 e i motori sono stettati a 3,4 o 5, accelera di 0.5
     else if (vel < 320+(Math.sin(pitch*Math.PI/180)*20) && motors > 3) vel += 0.5; // se la velocità è minore di 320 e i motori sono stettati a 4 o 5, accelera di 0.5
@@ -1103,7 +1103,7 @@ function manage_velocity() {
     else if (vel > 320+(Math.sin(pitch*Math.PI/180)*20) && motors < 5) vel -= 0.5;
     else if (vel > 263+(Math.sin(pitch*Math.PI/180)*20) && motors < 4) vel -= 0.5;
     else if (vel > 206+(Math.sin(pitch*Math.PI/180)*20) && motors < 3) vel -= 0.5;
-    else if (vel > 151+(Math.sin(pitch*Math.PI/180)*20) && motors < 2) vel -= 0.5;
+    else if (vel > 171+(Math.sin(pitch*Math.PI/180)*20) && motors < 2) vel -= 0.5;
 
     height = model.position.y*0.4;
 
@@ -1217,7 +1217,7 @@ function onDocumentKeyDown(event) {
             break;
 
         case 83: // s
-            if (roll < 0.05 && roll > -0.05 && pitch >= -60 && ((motors > 1 || pitch >= 0) && vel >= 180) && !emptyingTank && (!ground || vel > 150)) {
+            if (roll < 0.05 && roll > -0.05 && pitch >= -60 && !emptyingTank && (!ground || vel > 150)) {
                 clearInterval(reset);
                 flag = false;
                 model.rotateZ(-Math.PI / 400);
