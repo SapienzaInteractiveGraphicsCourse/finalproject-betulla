@@ -54,6 +54,7 @@ var pauseInterval=0; //intervallo di tempo passato in pausa
 
 var canvas, canvas_id;
 var light_mode = false;
+var light_mode_prv=false;
 
 var difficulty_html, difficulty, height_difficulty;
 const height_difficulty_h=6.3;
@@ -65,14 +66,15 @@ var motor_sound=new initialize_sound("sounds/motors.ogg");
 var cart_sound =new initialize_sound("sounds/cart.mp3");
 var gameover_sound=new initialize_sound("sounds/gameover.mp3");
 var water_sound =new initialize_sound("sounds/water.mp3");
+var victory_sound =new initialize_sound("sounds/Winning-sound-effect.mp3");
 motor_sound.sound.loop=true;
 motor_sound.sound.volume=0.8;
 cart_sound.sound.playbackRate=0.5;
 cart_sound.sound.onended=function(){cart_soundFlag=true;};
 cart_soundFlag=false;
+victory_sound.sound.delay=1.5;
 
 var message = "Hi, I'm Camil, your co-pilot on this mission. Let's not waste time, did you hear the commander? We have to put out the fire! I remind you how to take off, first of all start the engines [-press M-]";
-var message_gameOver = "";
 
 const loadingManager = new THREE.LoadingManager( () => {
     
@@ -103,14 +105,18 @@ function onTransitionEnd( event ) {
     event.target.remove();   
 }
 
-const texLoader = new THREE.TextureLoader(loadingManager);
-const GLTFloader = new THREE.GLTFLoader(loadingManager);
+var texLoader = new THREE.TextureLoader(loadingManager);
+var GLTFloader = new THREE.GLTFLoader(loadingManager);
 
 function start_game() {
     document.getElementById('loading-screen').style.display = "block";
     if (first_time) {
         init();
         first_time=false;
+    }
+    else if (!first_time && light_mode_prv!=light_mode){
+    	free_mem();
+    	init();
     }
     else {
         partial_init();
@@ -275,10 +281,10 @@ function init() {
     // ground
     var groundGeometry = new THREE.PlaneBufferGeometry( 50000, 50000 );
     var groundMaterial = new THREE.MeshStandardMaterial( { roughness: 1, metalness: 1 } );
-    var ground = new THREE.Mesh( groundGeometry, groundMaterial );
-    ground.rotation.x = Math.PI * - 0.5;
-    ground.receiveShadow= true;
-    scene.add( ground );
+    ground_mesh = new THREE.Mesh( groundGeometry, groundMaterial );
+    ground_mesh.rotation.x = Math.PI * - 0.5;
+    ground_mesh.receiveShadow= true;
+    scene.add( ground_mesh );
     texLoader.load( "images/grass_grass_0107_01.jpg", function ( map ) {
         map.wrapS = THREE.RepeatWrapping;
         map.wrapT = THREE.RepeatWrapping;
@@ -290,8 +296,7 @@ function init() {
 
     // lights
 
-    light = new THREE.HemisphereLight( 0xffffbb, 0x080820, 2 );
-    light.position.set( 0, 10, 0);
+    light = new THREE.AmbientLight( 0xffffbb, 1 );
     scene.add( light );
 
     dirLight = new THREE.DirectionalLight( 0xffffff, 3 );
@@ -301,10 +306,10 @@ function init() {
     dirLight.distance = 200;
     dirLight.castShadow = true;
     dirLight.shadowDarkness=0.5;
-    dirLight.shadow.mapSize.width = 550;
-    dirLight.shadow.mapSize.height = 550;
-    dirLight.shadow.camera.near = 0.5;
-    dirLight.shadow.camera.far = 500
+    dirLight.shadow.mapSize.width = 2048;
+    dirLight.shadow.mapSize.height = 2048;
+    dirLight.shadow.camera.near = 1;
+    dirLight.shadow.camera.far = 180000;
     scene.add( dirLight );
 
     // lake
@@ -320,7 +325,7 @@ function init() {
     	    lakeMaterial.map = map;
     	    lakeMaterial.needsUpdate = true;
     	} );
-    	var lake = new THREE.Mesh( lakeGeometry, lakeMaterial );
+    	lake = new THREE.Mesh( lakeGeometry, lakeMaterial );
     }
     else {
 	    lake = new Water( lakeGeometry, {
@@ -344,8 +349,8 @@ function init() {
 
     //load grass
     if(!light_mode){
-        var grassLine = [];
-        var grassLine2 = [];
+        grassLine = [];
+        grassLine2 = [];
         GLTFloader.load('Models/yet_another_grass_model/scene.gltf', function ( gltf ) {
                 grass = gltf.scene;
                 grass.scale.set(0.05, 0.05, 0.05);
@@ -486,10 +491,10 @@ function init() {
             });
     }
 
-    var mtlLoader = new THREE.MTLLoader();
+    var mtlLoader = new THREE.MTLLoader(loadingManager);
     mtlLoader.load("Models/angar/Shelter_simple.mtl", function(materials){
         materials.preload();
-        var objLoader = new THREE.OBJLoader();
+        var objLoader = new THREE.OBJLoader(loadingManager);
         objLoader.setMaterials(materials);
         objLoader.load("Models/angar/Shelter_simple.obj", function(mesh){
 
@@ -593,7 +598,7 @@ function init() {
             fuoriAcqua = true;
     }
 
-    var plane = new THREE.PlaneBufferGeometry( 512, 512 );
+    plane = new THREE.PlaneBufferGeometry( 512, 512 );
     var fire = new Fire( plane, {
         textureWidth: 512,
         textureHeight: 512,
@@ -792,7 +797,10 @@ function animate() {
         document.getElementById('conversation').innerHTML = "Camil: " + message;
 
         if (vittoria) {
-        	modal("myModal_6");
+        	play_pause();
+    	    document.getElementById("win_msg").innerHTML= "Your time is:"+compute_time(curTime);
+    	    modal("myModal_6");
+    	    if (volume) victory_sound.sound.play();
         	fire_sound.setVolume=0;
         	scene.remove(fire);
         }
@@ -1128,7 +1136,6 @@ function messages() {
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
     else if (model.position.x<(min_x_area+3000) || model.position.x>(max_x_area-3000) || 
         model.position.z>(max_y_area-3000) || model.position.z<(min_y_area+3000)) message="You are going too far! Come back or we'll fail the mission!"
-    else if (vel < 200) message = "Be careful, you're flying too slowly! You should increase your speed [-hold B-].";
     else if (height < 90 && !posizione_sopra_acqua(model.position.x, model.position.z)) message = "Be careful, you're flying too low, increase the altitude!";
     else if (!onLake && !tank && posizione_sopra_acqua(model.position.x, model.position.z)) message = "Descend to an altitude of at least " + (height_difficulty-3).toFixed(0) + " meters to be able to fill the tank";
     else if (onLake && !tank) message = "All right, fill the tank [-press spacebar-].";
@@ -1313,6 +1320,8 @@ function audio_game(val){
         motor_sound.sound.volume=0;
         cart_sound.sound.volume=0;
         water_sound.sound.volume=0;
+        victory_sound.sound.volume=0;
+        gameover_sound.sound.volume=0;
         fire_sound.setVolume(0);
     }
     else {
@@ -1322,6 +1331,8 @@ function audio_game(val){
         motor_sound.sound.volume = 0.8;
         cart_sound.sound.volume = 1;
         water_sound.sound.volume=1;
+        victory_sound.sound.volume=1;
+        gameover_sound.sound.volume=1;
         fire_sound.setVolume(8);
     }
 }
@@ -1410,7 +1421,6 @@ function reset_var(){
 
     clearInterval(engine);
     clearInterval(reset);
-
     clearInterval(motion);
     clearInterval(manage_velocity);
     clearInterval(go_motors);
@@ -1457,6 +1467,9 @@ function reset_var(){
     particles = [];
     time = [];
 
+    clock= new THREE.Clock();
+    pauseClock = new THREE.Clock();
+
     //hide game window during loading
     document.getElementById('game_id').style.display = 'none';
 
@@ -1467,10 +1480,112 @@ function reset_var(){
     for(var i = 0; i < aeroporto.length; i++)
         scene.add(aeroporto[i]);
 
+    //segna se va attivata/disattivata light mode
+    light_mode_prv=light_mode;
+
     model.position.set(10, 4, 9);
     scene.remove(model);
     model.dispose();
 }
+
+function free_mem(){
+	model.remove(camera);
+	model.remove(particleSys);
+	scene.remove(model);
+	scene.remove(ground_mesh);
+	scene.remove(light);
+	scene.remove(dirLight);
+	scene.remove(lake);
+	scene.remove(street);
+	camera.remove(listener);
+	scene.remove(fire_sound_mesh);
+	fire_sound_mesh.remove(fire_sound);
+	scene.remove(fire);
+	scene.remove(sky);
+
+	scene.dispose();
+    renderer && renderer.renderLists.dispose();
+	model.dispose();
+	ground_mesh.geometry.dispose();
+	ground_mesh.material.dispose();
+	if (light_mode_prv){
+		lake.geometry.dispose();
+		lake.material.dispose();
+	}
+	else lake.geometry.dispose();
+	street.dispose();
+	fire_sound_mesh.geometry.dispose();
+	fire_sound_mesh.material.dispose();
+	plane.dispose();
+	sky.geometry.dispose();
+	sky.material.dispose();
+	texture.dispose();
+
+    clock = null;
+    pauseClock = null;
+    waterClock=null;
+    particleSys=null;
+    ground_mesh=null;
+    light = null;
+    dirLight = null;
+    lake=null;
+    street=null;
+    mesh=null;
+    mesh1=null;
+    mesh2=null;
+    sky=null;
+    ilFuoco = [];
+    trees=[];
+    burnedTree = [];
+    aeroporto = [];
+
+    if (!light_mode_prv){
+        scene.remove(canadair2);
+        scene.remove(canadair3);
+        canadair2.dispose();
+    	canadair3.dispose();
+    	canadair2=null;
+        canadair3=null;
+        for(var i = 0; i < 12; i++){
+            scene.remove( grassLine[i] );
+            grassLine[i].dispose();
+        }
+        for(var j = 5; j < 12; j++){
+            scene.remove( grassLine2[j] );
+            grassLine2[j].dispose();
+        }
+        for(var j = 12; j < 19; j++){
+            scene.remove( grassLine2[j] );
+            grassLine2[j].dispose();
+        }
+        for(var i = 12; i < 24; i++){
+            scene.remove( grassLine[i] );
+            grassLine[i].dispose();
+        }
+        scene.remove(tower);
+        tower.dispose();
+    	tower=null;
+    	scene.remove(hangar);
+    	scene.remove(hangar1);
+    	scene.remove(hangar2);
+    	scene.remove(hangar3);
+    	scene.remove(hangar4);
+    	hangar.dispose();
+    	hangar1.dispose();
+    	hangar2.dispose();
+    	hangar3.dispose();
+    	hangar4.dispose();
+    	hangar=null;
+    	hangar1=null;
+    	hangar2=null;
+    	hangar3=null;
+    	hangar4=null;
+    }
+
+    texLoader = new THREE.TextureLoader(loadingManager);
+	GLTFloader = new THREE.GLTFLoader(loadingManager);
+}
+
 
 function partial_init(){
     difficulty_html = document.getElementById("lista_diff");
@@ -1508,6 +1623,8 @@ function partial_init(){
             model.scale.set(1, 1, 1);
 
             model.traverse(function (children){
+
+            	if ( children instanceof THREE.Mesh ) { children.castShadow = true; }
 
                 if (children.name == "heliceG") elica_sx = children;
                 if (children.name == "heliceD") elica_dx = children;
@@ -1574,7 +1691,7 @@ function partial_init(){
 
 }
 
-//PARTICELLE STUFF
+//PARTICELLE ACQUA
 const gAccel = -9.81
 const particleCount = 6096; /* Falling particles.*/
 

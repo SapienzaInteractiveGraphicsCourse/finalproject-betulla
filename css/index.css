@@ -148,6 +148,13 @@ body {
 
 .close {display: none;}
 
+#instruction{
+  position: absolute;
+  margin-left: 5%;
+  margin-right: 5%;
+  font-size: 1.2vw;
+}
+
 #commands{
   width:74vh; 
   height: 74vh;
@@ -543,7 +550,7 @@ body {
   text-align: center;
 }
 
-#gameover_msg {
+.msg {
   display: block;
   position: absolute;
   font-family: Info;
@@ -576,7 +583,7 @@ body {
   left: 50%;
   transform: translate(-50%, -50%);
   font-family: Info;
-  font-size: 8vh;
+  font-size: 7vh;
   color: rgb(179, 0, 0);  
   text-align: center;
 }
@@ -586,5 +593,5 @@ body {
   margin-left: auto;
   margin-right: auto;
   width: 20vh;
-  margin-top: 30%;
+  margin-top: 60%;
 }
