@@ -1,0 +1,130 @@
+\documentclass{article}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{newtxtext,newtxmath}
+\usepackage{graphicx}
+\usepackage{subcaption}
+\usepackage{float}
+\usepackage[margin=0.8in]{geometry}
+\usepackage[utf8]{inputenc}
+
+\newcommand{\maximize}{%
+  \mathopen{}\operatorname*{maximize}%
+}
+
+\title{Betulla Rescue \\ Interactive Graphics Project}
+\author{Leonardo Brizi\\Tommaso Carlini\\Eleonora Chiarantano}
+
+\begin{document}
+
+\maketitle
+\newpage
+
+\section*{Introduction}
+Betulla Rescue is the result of the collaboration of three students from La Sapienza University, with the aim of creating a game that was intuitive, fun and dealt with real issues. Within the game the player is the pilot of a Bombardier-415, better known as Canadair, an aircraft supplied to firefighters to fight large fires in areas difficult to reach. The goal is to limit and then extinguish a fire in the shortest possible time. The player will be supported during the game by the co-pilot Camil, who will provide valuable information throughout the mission, will strive to give advice on altitude, speed, commands to press and much more. The game ends when the fire is completely extinguished.
+
+\section*{Models}
+
+\subsection*{Bombardier-415}
+The 3D model of the Bombardier-415 was downloaded through the site \textit{Cgtrader}\footnote{https://www.cgtrader.com/free-3d-models/aircraft/historic/bombardier-415-superscooper} and then modified using the program Blender v-2.80\footnote{https://www.blender.org/}. The model is composed of 78 children, which compose the torso, the wings, the propellers, the tail and the landing gear. We chose this model because it faithfully reproduces the object we wanted to recreate and it is easily modeled
+\begin{figure}[h!]
+  \includegraphics[width=\linewidth]{Canadair complete.png}
+  \caption{Bombardier-415 opened with Blender v-2.80}
+\end{figure}
+ 
+\subsection*{World}
+The world generates itself autonomously with the advance of the plane so as to make the game lighter and allow to have a more fluid graphics. We decided to generate a forest not too dense, considering the creation of a multitude of trees too heavy and unnecessary for the final purpose of the game. Our goal was to make the idea of an open wooded area. The position of the lake is fixed and is located in front of the runway so as to make immediate his vision. The fire is generated autonomously in a random position within the "work area". The latter is a limited portion of the world within which the plane can move freely, but that, if the player violates the boundaries, produces the failure of the player and consequently the defeat. In this way we were able to create a world limited in space so as to have a light code and prevent the player from getting lost in the infinite immensity of a virtual game.
+
+\subsubsection*{Trees}
+We imported the trees from this site. We also decided to manage two different types of trees, a first type is formed by pines\footnote{https://sketchfab.com/3d-models/pine-tree-single-01-ed72511b36c14446a1b596b7e3686d73}, and is the main part of our forest. The other type is generated in the areas affected by the fire and is composed of burnt trees\footnote{https://sketchfab.com/3d-models/tree-free-extra-details-scan-cdb8c99aa5774fcab712f9082b061a9d}. This allows us to make the world more realistic and gives an intuitive idea of the area affected by the fire even when the fire has been extinguished. \\
+LEO SCRIVI DUE PAROLE SU COME VENGONO GENERATI GLI ALBERI
+
+\subsubsection*{Sky}
+
+\subsubsection*{Grass}
+For the representation of the grass we decided to reproduce a more detailed type of grass\footnote{https://sketchfab.com/3d-models/yet-another-grass-model-95dc9c01a9ed45a99a3303b95c9f3f91} only when the plane is near the ground (i.e. during the take-off phase). Otherwise, the ground is covered with a "carpet" that gives the idea of a turf in 2D and therefore much lighter. \\
+LEO SCRIVI DUE PAROLE SU COME VIENE GENERATA L'ERBA
+
+\subsubsection*{Fire}
+NON HO IDEA DI COSA SCRIVERE.. VI PREGO PENSATECI VOI
+Fuoco + animazione + espansione
+
+\subsubsection*{Water}
+NON HO IDEA DI COSA SCRIVERE.. VI PREGO PENSATECI VOI (PARTE 2)
+lago + scarico acqua
+
+\subsection*{Airport}
+
+\subsubsection*{Hangars}
+From the websites \textit{Sketchfab} and \textit{Cgtrader}, we decided to import two different types of hangars so as to give a greater variety to the environment and make the airport area more realistic. The first type of hangar is a closed building\footnote{https://sketchfab.com/3d-models/hangar-558d7e381b9a4b099a49e72ff5824ecb}, very similar to a protected office or warehouse.
+The second is the classic hangar\footnote{https://www.cgtrader.com/free-3d-models/military/other/aircraft-low-poly-shelter-hangar} inside the airports, a metal structure that serves to cover the aircraft from the rain and sun.
+
+\subsubsection*{Radio Tower} 
+Questo è il sito\footnote{https://open3dmodel.com/download/communication-tower-building\_12469.html}
+\subsubsection*{Take-off Runway}
+Pista\footnote{https://sketchfab.com/3d-models/sidewalk-c4d846ab2beb40e09582ef5d93746e6a}
+
+\section*{Animations of the plane}
+\subsection*{Maneuverability}
+Although we had initially decided to make the piloting of the aircraft very similar to a real simulation, with time and several tests we realized that the piloting was extremely complicated for a player without aeronautical knowledge. This problem of piloting would be boundless in the absence of fun, the primary objective of the game, and as a result we decided to structure the piloting in a simpler and more intuitive way. We rely on the WASD command set for piloting, i.e. controlling roll\footnote{The roll angle is the angle that rotates around the longitudinal axis, that is, the axis that connects the tip with the tail.} and pitch\footnote{The pitch angle is the angle that rotates along the latitudinal axis, that is, the axis that connects the two wing ends.} angles. We decided to avoid rotations along the yaw axis because we integrated the movements along this axis in the (automatic) movements of the rudder, which moves according to the turn to counteract the phenomenon of adverse yaw\footnote{https://en.wikipedia.org/wiki/Adverse\_yaw}. To turn, the player simply press the A (left) or D (right) commands. Pressing one of these two commands will cause the player to rotate along the roll axis in the direction of the turn, lowering the internal flaps of the internal wing and slightly raising the internal flaps of the external wing to the rotation. This movement of the flaps allows the inclination of the plane, in fact the flaps of the inner wing, slowing down cause an effect of inertia which rotates the plane, however, being the inner wing braked by the flaps, it is necessary to raise slightly the flaps of the outer wing so as to have a slowdown in the rotation of the anode the axis of yaw, also controlled by the movement of the rudder. All of these actions cause the plane to tilt and turn. For simplicity we have decided to limit the rotation up to a roll angle of 90 degrees. The rotation is progressive and depends on the angle of roll, the more the inclination will be accentuated and the smaller the turning radius will be. On the right of the screen, there will be a roll angle indicator expressed in degrees, positive for counterclockwise rotations and negative for clockwise rotations. Rotation along the pitch axis is controlled by the W controls for the dive and the S controls for the cab. Also in this case the rotation is limited and less than 60 degrees. During pitch rotation, the outer flaps of the wings move in a coordinated and inverse manner to the rudder flaps. In fact, for the cabin you will need to raise the front of the aircraft and lower the thing. To do this, the outer flaps of the wings will be lowered progressively, while the rudder flaps will be raised, thus causing a depression and lowering the tail. During the dive the opposite happens, i.e. the outer flaps of the wings are raised, while the rudder flaps are lowered. As for the roll, also the pitch has an indicator of the rotation, positive during the dive and negative during the cab. We decided not to give the possibility to mix the roll and pitch angles as the player would face configurations of difficult interpretation. We thought of a self-stable profile, which is for both roll and pitch, once released the command, the aircraft will return independently in the stable configuration. This greatly simplifies maneuverability and makes the game more accessible.
+
+\subsection*{Velocity}
+We have decided to equip the plane with five levels of speed. Initially it starts from a zero speed, with the engines off. Pressing the M button starts the engines, which causes the wheels to start (both front and rear) and the propellers to rotate (the rotation takes place in the opposite direction to prevent the aircraft from rotating due to the moment of inertia). Once the motors have been switched on, the speed can be controlled using keys B and N, which allow acceleration and deceleration respectively. Each time one of the two keys is pressed, the next (or previous) speed level is reached, up to a maximum level of 5 and a minimum level of 1. The speeds for each level are the following:
+\begin{itemize}
+\item \textbf{Level 1}: 171 Km/h
+\item \textbf{Level 2}: 206 Km/h
+\item \textbf{Level 3}: 263 Km/h
+\item \textbf{Level 4}: 320 Km/h
+\item \textbf{Level 5}: 376 Km/h
+\end{itemize}
+However, speeds are affected by the aircraft's trim, reducing in the case of a cab or increasing in the case of a dive. This was achieved by integrating the pitch angle into the manage\_velocity function.
+
+\subsection*{Take-off}
+The take-off phase is one of the most delicate phases in the flight activity, the pilot must make the plane take as much speed as possible and then cabrate to take altitude. To make the take-off phase easier, we have prevented the player from making a dive or a turn during the initial take-off phase. This was possible thanks to the ground variable, a Boolean variable that is true when the aircraft is on the ground. A Bombardier-415 has a stall speed of about 150 km/h, so we made it impossible for the plane to take off at lower speeds. Being on the runway, in addition to the thrust of the propellers also has the acceleration due to the rotation of the wheels, so the acceleration during the ground phase of the takeoff is greater than that which occurs during the flight. Once the take-off is complete, it is essential that the pilot calls back the landing gear, especially as the landing gear would crash if it approached an aquatic surface. To close the landing gear, the player can press button C, which will activate two functions for closing the front and rear landing gear. 
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{ant open.png}
+    \caption{Front gear open}
+  \end{subfigure}
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{ant close.png}
+    \caption{Front gear close}
+  \end{subfigure}
+  \caption{Front gear during the closing of the landing gears}
+\end{figure}
+
+\begin{figure}[h!]
+  \centering
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{post open.png}
+    \caption{Rear gear open}
+  \end{subfigure}
+  \begin{subfigure}[h!]{0.4\linewidth}
+    \includegraphics[width=\linewidth]{post close.png}
+    \caption{Rear gear close}
+  \end{subfigure}
+  \caption{Rear gear during the closing of the landing gears}
+\end{figure}
+
+\section*{Home Page}
+The home page has 4 buttons in the middle of the screen: 
+\begin{itemize}
+\item \textbf{PLAY GAME}: allows you to start the game.
+\item \textbf{INSTRUCTIONS}: provides a detailed explanation of the rules and commands.
+\item \textbf{COMMANDS}: illustrates the functions associated with the keys.
+\item \textbf{LIGHT MODE}: activates the light mode required for less powerful devices.
+\end{itemize}
+At the bottom you can adjust the difficulty, choosing through 4 levels that appear from a drop-down menu. The difficulties are as follows:
+\begin{itemize}
+\item \textbf{BEGINNER}: to be considered as a tutorial, the fire will not expand and you can fill the tank with a height less than or equal to 15 meters.
+\item \textbf{EASY}: For novice players, the fire will expand slowly and you can fill the tank with an altitude less than or equal to 10 meters.
+\item \textbf{NORMAL}: For players looking for a challenge, the fire will expand quickly and you can fill the tank with an altitude less than or equal to 6 meters.
+\item \textbf{HARD}: For experienced players who want an extreme challenge, the fire will expand very quickly and you can fill the tank with an altitude less than or equal to 3 meters.
+\end{itemize}
+At the top left of the home screen there is a button with a loudspeaker that allows you to enable or disable the sound.
+
+
+
+\end{document}
