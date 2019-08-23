@@ -592,7 +592,7 @@ function init() {
                 firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
                 firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
             }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
-        if(Math.pow(firePosition[0] - waterPosition[0],2) + Math.pow(firePosition[1] - waterPosition[1],2) > waterRadius+2000)
+        if(Math.pow(firePosition[0] - waterPosition[0],2) + Math.pow(firePosition[1] - waterPosition[1],2) > Math.pow(waterRadius+2000,2))
             fuoriAcqua = true;
     }
 
@@ -1249,9 +1249,10 @@ function onDocumentKeyDown(event) {
                 if(posizione_sopra_fuoco(model.position.x,model.position.z)){
                     var distanzaDaFuoco = Math.sqrt(Math.pow((model.position.x - firePosition[0]),2)
                         + Math.pow(model.position.z - firePosition[1],2));
-                    var quanto = 7 - Math.abs(distanzaDaFuoco)/100;
+                    var quanto = 5 - Math.abs(distanzaDaFuoco)/100;
                     if(quanto < 0)
-                        quanto = 2;
+                        quanto = 1;
+                    console.log(quanto);
                     fire_extinguish(quanto);
                     msg_id++;
                     if (msg_id%3==0) msg_id=0;
