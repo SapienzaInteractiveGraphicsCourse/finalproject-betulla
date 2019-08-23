@@ -50,9 +50,20 @@
 \section*{Introduction}
 Betulla Rescue is the result of the collaboration of three students from La Sapienza University, with the aim of creating a game that was intuitive, fun and dealt with real issues. Within the game the player is the pilot of a Bombardier-415, better known as Canadair, an aircraft supplied to firefighters to fight large fires in areas difficult to reach. The goal is to limit and then extinguish a fire in the shortest possible time. The player will be supported during the game by the co-pilot Camil, who will provide valuable information throughout the mission, will strive to give advice on altitude, speed, commands to press and much more. The game ends when the fire is completely extinguished.
 
-\section*{Models}
+\section*{Environments}
 
-\subsection*{Bombardier-415}
+The world and the plane were created using the library three.js\footnote{https://threejs.org} a library of Javascript used to create and display animated 3D computer graphics in a web browser. Within three.js we have subsequently imported the following libraries:
+\begin{itemize}
+\item \textit{dat.gui.min.js}: A lightweight graphical user interface for changing variables in JavaScript.
+\item \textit{GLTFLoader.js}:glTF (GL Transmission Format) is an open format specification for efficient delivery and loading of 3D content.
+\item \textit{MTLLoader.js}: The Material Template Library format (MTL) or .MTL File Format is a companion file format to .OBJ that describes surface shading (material) properties of objects within one or more .OBJ files.
+\item \textit{OBJLoader.js}: The OBJ file format is a simple data-format that represents 3D geometry in a human readable format.
+\item \textit{TextureLoader.js}: Class for loading a texture.
+\end{itemize}
+
+\subsection*{Models}
+
+\subsubsection*{Bombardier-415}
 
 \begin{figure}[h!]
   \includegraphics[width=\linewidth]{ImmaginiReport/Canadaircomplete.png}
@@ -60,8 +71,6 @@ Betulla Rescue is the result of the collaboration of three students from La Sapi
 \end{figure}
  
 The 3D model of the Bombardier-415\footnote{All the informations about the Bombardier-415 are taken from http://www2.malignani.ud.it/WebEnis/aer/Portfolio/CANADAIR\_CL415.pdf} was downloaded through the site \textit{Cgtrader}\footnote{https://www.cgtrader.com/free-3d-models/aircraft/historic/bombardier-415-superscooper} and then modified using the program Blender v-2.80\footnote{https://www.blender.org/}. The model is composed of 78 children, which compose the torso, the wings, the propellers, the tail and the landing gear. We chose this model because it faithfully reproduces the object we wanted to recreate and it is easily modeled
-
-\newpage
 
 \begin{lstlisting}[language=Java, caption=Bombardier-415 loader]
 GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( gltf ) {
@@ -148,35 +157,33 @@ GLTFloader.load( 'Models/Bombardier-415/bombardier_canadair.glb', function ( glt
         });
 \end{lstlisting}
 
-\subsection*{World}
+\subsubsection*{World}
 The world generates itself autonomously with the advance of the plane so as to make the game lighter and allow to have a more fluid graphics. We decided to generate a forest not too dense, considering the creation of a multitude of trees too heavy and unnecessary for the final purpose of the game. Our goal was to make the idea of an open wooded area. The position of the lake is fixed and is located in front of the runway so as to make immediate his vision. The fire is generated autonomously in a random position within the "work area". The latter is a limited portion of the world within which the plane can move freely, but that, if the player violates the boundaries, produces the failure of the player and consequently the defeat. In this way we were able to create a world limited in space so as to have a light code and prevent the player from getting lost in the infinite immensity of a virtual game.
 
-\subsubsection*{Trees}
+\subparagraph*{Trees}
 We imported the trees from this site. We also decided to manage two different types of trees, a first type is formed by pines\footnote{https://sketchfab.com/3d-models/pine-tree-single-01-ed72511b36c14446a1b596b7e3686d73}, and is the main part of our forest. The other type is generated in the areas affected by the fire and is composed of burnt trees\footnote{https://sketchfab.com/3d-models/tree-free-extra-details-scan-cdb8c99aa5774fcab712f9082b061a9d}. This allows us to make the world more realistic and gives an intuitive idea of the area affected by the fire even when the fire has been extinguished. \\
 LEO SCRIVI DUE PAROLE SU COME VENGONO GENERATI GLI ALBERI
 
-\subsubsection*{Sky}
-
-\subsubsection*{Grass}
+\subparagraph*{Grass}
 For the representation of the grass we decided to reproduce a more detailed type of grass\footnote{https://sketchfab.com/3d-models/yet-another-grass-model-95dc9c01a9ed45a99a3303b95c9f3f91} only when the plane is near the ground (i.e. during the take-off phase). Otherwise, the ground is covered with a "carpet" that gives the idea of a turf in 2D and therefore much lighter. \\
 LEO SCRIVI DUE PAROLE SU COME VIENE GENERATA L'ERBA
 
-\subsubsection*{Fire}
+\subparagraph*{Fire}
 NON HO IDEA DI COSA SCRIVERE.. VI PREGO PENSATECI VOI
 Fuoco + animazione + espansione
 
-\subsubsection*{Water}
+\subparagraph*{Water}
 NON HO IDEA DI COSA SCRIVERE.. VI PREGO PENSATECI VOI (PARTE 2)
 lago + scarico acqua
 L'acqua è stata importata da qui\footnote{https://github.com/mrdoob/three.js/blob/master/examples/webgl\_shaders\_ocean.html\#L100}
 
-\subsection*{Airport}
+\subsubsection*{Airport}
 
-\subsubsection*{Hangars}
+\subparagraph*{Hangars}
 From the websites \textit{Sketchfab} and \textit{Cgtrader}, we decided to import two different types of hangars so as to give a greater variety to the environment and make the airport area more realistic. The first type of hangar is a closed building\footnote{https://sketchfab.com/3d-models/hangar-558d7e381b9a4b099a49e72ff5824ecb}, very similar to a protected office or warehouse.
 The second is the classic hangar\footnote{https://www.cgtrader.com/free-3d-models/military/other/aircraft-low-poly-shelter-hangar} inside the airports, a metal structure that serves to cover the aircraft from the rain and sun. A control tower\footnote{https://open3dmodel.com/download/communication-tower-building\_12469.html} has been positioned next to the hangars for communication with the base.
 
-\subsubsection*{Take-off Runway}
+\subparagraph*{Take-off Runway}
 The runway was imported by \textit{Sketchfab}\footnote{https://sketchfab.com/3d-models/sidewalk-c4d846ab2beb40e09582ef5d93746e6a} and was designed to allow the aircraft to reach a speed of about 215 km/h. Considering that the stall speed of a Bombardier-415 is about 150 km/h and that therefore it must be the minimum speed to face a takeoff, the runway has been designed long enough to allow the possibility of a safe takeoff. We have also chosen to position the runway in the direction of the lake so as to help the player to reach the water surface as quickly as possible. 
 
 \newpage
@@ -346,8 +353,6 @@ function manage_velocity() {
 }
 \end{lstlisting}
 
-
-
 \subsection*{Take-off}
 The take-off phase is one of the most delicate phases in the flight activity, the pilot must make the plane take as much speed as possible and then cabrate to take altitude. To make the take-off phase easier, we have prevented the player from making a dive or a turn during the initial take-off phase. This was possible thanks to the ground variable, a Boolean variable that is true when the aircraft is on the ground. A Bombardier-415 has a stall speed of about 150 km/h, so we made it impossible for the plane to take off at lower speeds. Being on the runway, in addition to the thrust of the propellers also has the acceleration due to the rotation of the wheels, so the acceleration during the ground phase of the takeoff is greater than that which occurs during the flight. Once the take-off is complete, it is essential that the pilot calls back the landing gear, especially as the landing gear would crash if it approached an aquatic surface. To close the landing gear, the player can press button C, which will activate two functions for closing the front and rear landing gear. 
 
@@ -378,10 +383,9 @@ The take-off phase is one of the most delicate phases in the flight activity, th
 \end{figure}
 
 \newpage
-
 \section*{Home Page}
 
-\begin{figure}[h!]
+\begin{figure}[h]
   \includegraphics[width=\linewidth]{ImmaginiReport/initial.png}
   \caption{Home page and with diccoulty menu}
 \end{figure}
