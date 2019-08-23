@@ -1121,7 +1121,7 @@ function messages() {
     else if (emptyingTank && fire) {
         message= exclamation[msg_id];
     }
-    else if (fire && tank) message = "Now, empty the tank to extinguish the fire [-press spacebar-].";
+    else if (fire && tank) message = "Now, empty the tank on the fire to extinguish it [-press spacebar-].";
     else if (height > 600) message = "Hey, you're flying too high! Go down to a more acceptable altitude.";
     else if (model.position.x<(min_x_area+3000) || model.position.x>(max_x_area-3000) || 
         model.position.z>(max_y_area-3000) || model.position.z<(min_y_area+3000)) message="You are going too far! Come back or we'll fail the mission!"
@@ -1252,7 +1252,6 @@ function onDocumentKeyDown(event) {
                     var quanto = 5 - Math.abs(distanzaDaFuoco)/100;
                     if(quanto < 0)
                         quanto = 1;
-                    console.log(quanto);
                     fire_extinguish(quanto);
                     msg_id++;
                     if (msg_id%3==0) msg_id=0;
@@ -1692,7 +1691,7 @@ function partial_init(){
                 firePosition[0] = Math.floor(Math.random() * (maxX - minX)) + minX;
                 firePosition[1] = Math.floor(Math.random() * (maxY - minY)) + minY;
             }while(posizione_sopra_acqua(firePosition[0], firePosition[1]) || posizione_sopra_aereoporto(firePosition[0], firePosition[1]));
-        if(Math.pow(firePosition[0] - waterPosition[0],2) + Math.pow(firePosition[1] - waterPosition[1],2) > waterRadius+2000)
+        if(Math.pow(firePosition[0] - waterPosition[0],2) + Math.pow(firePosition[1] - waterPosition[1],2) > Math.pow(waterRadius+2000,2))
             fuoriAcqua = true;
     }
 
@@ -2024,12 +2023,12 @@ function fire_expansion(){
     let win_timeout;
     if (!playFlag) return;
     if (ilFuoco[0].scale.x < 0.2) {
-        clearTimeout(win_timeout);
-        timeout = setTimeout(function() {
-        win_menu();
+        win_timeout = setTimeout(function() {
+        	win_menu();
         }, 2000);
         return;
     }
+    else clearTimeout(win_timeout);
     if(ilFuoco[0].scale.x > 30){
         return;
     }
@@ -2047,11 +2046,12 @@ function fire_extinguish(quanto){
         ilFuoco[i].scale.set(fireScale, fireScale, fireScale);
         ilFuoco[i].position.set(firePosition[0], 50*fireScale, firePosition[1]);
     }
-    if(quanto >= fireScale - 0.2)
-        clearTimeout(win_timeout);
+    if(quanto >= fireScale - 0.2) {
         win_timeout = setTimeout(function() {
-        win_menu();
+        	win_menu();
         }, 2000);
+    }
+    else clearTimeout(win_timeout);
 }
 
 //Fire
