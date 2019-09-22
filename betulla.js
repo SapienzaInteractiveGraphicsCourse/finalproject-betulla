@@ -1136,6 +1136,7 @@ function messages() {
 
 document.addEventListener('keyup', logKey);
 function logKey() {
+    if(!playFlag) return;
     if (!flag) {
         flag = true;
         reset = setInterval(reset_attitude, 1);
